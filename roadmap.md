@@ -1,0 +1,16 @@
+# Tasks
+- [x] Repair face/feature detection and verify actual portrait landmarks.
+- [x] Add wheel zoom, section resets, undo/redo, Hue/Saturation and advanced AI-assisted skin controls with faster feedback.
+- [x] Upgrade crop handles, moving/resizing, zoom/pan and reversible crop editing.
+- [x] Rename branding to MBT EDIT and verify portrait, crop and print flows.
+- [x] Add multiple edited studio photos without replacing earlier imports.
+- [x] Correct mixed-size row fitting and independent spacing.
+- [x] Verify multi-photo editing and print layout with tests and the live tool.
+- [x] Integrate the supplied print tool into a fullscreen, minimizable Print Preview.
+- [x] Synchronize the edited photo while retaining print-tool settings.
+- [x] Test opening, minimizing, editing, restoring and printing.
+- [x] Pro Editor popup: Tone Curve, Levels, Eraser/Heal/Brush/Dodge-Burn, W×H×Resolution crop, Perspective crop; apply returns photo to main file and Print Preview.
+- [x] Add SkinFiner-style portrait popup with detected face/skin masks, texture-preserving smoothing, skin tone and under-eye controls.
+- [x] Add Before/After, mask refinement, custom preset files and sequential local batch export.
+- [x] Verify portrait retouching, batch processing and main/print synchronization; output is 8-bit sRGB PNG, not an Adobe plugin or arbitrary ICC/16-bit workflow.
+- [x] AI face/feature, hair, beard, glasses, cap/hijab and clothes detection with region protection toggles, AI Map, and real-time slider preview.

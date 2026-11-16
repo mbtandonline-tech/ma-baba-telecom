@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>পাসপোর্ট ফটো প্রিন্ট লেআউট</title>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&display=swap" rel="stylesheet">
+<style id="pgs"></style>
+<style>
+*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+html,body{height:100%}
+body{margin:0;font:13px/1.5 "Hind Siliguri","Noto Sans Bengali",Kalpurush,Vrinda,system-ui,sans-serif;background:#d9dee3;color:#16232e}
+.app{display:flex;flex-direction:column;height:100vh}
+.titlebar{flex:0 0 auto;background:rgba(32,48,92,.82);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);color:#fff;padding:5px 14px;font-size:14px;font-weight:700;display:flex;align-items:center;gap:10px}
+.titlebar .mut{color:#c4cdea;font-weight:400;font-size:12px}
+.qat{display:flex;align-items:center;gap:2px;margin-left:auto}
+.qat button{border:1px solid transparent;background:transparent;color:#fff;width:30px;height:26px;border-radius:6px;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.qat button:hover:not(:disabled){background:#3a4d85;border-color:#4d5fa0}
+.qat button:disabled{opacity:.35;cursor:default}
+.qat .sep{width:1px;height:18px;background:#4a5a8c;margin:0 4px}
+.ribbon{flex:0 0 auto;background:#f3f5f7;border-bottom:1px solid #c3cbd3;position:relative;z-index:5}
+#tabs{display:flex;background:#fff;border-bottom:1px solid #c3cbd3;padding:0 8px;overflow-x:auto}
+#tabs #tabpin{margin-left:auto;padding:8px 14px;font-size:16px}
+#tabs button{border:0;background:transparent;padding:8px 14px;font:inherit;font-weight:700;font-size:13px;color:#3c4652;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:5px}
+#tabs button.on{color:#2f4bd8;border-color:#2f4bd8;background:#eef1fdcc}
+#tabs button.pic{color:#a8431f}
+#tabs button.pic.on{color:#a8431f;border-color:#a8431f;background:#fdeee8cc}
+#panels{background:#fbfcfd;border-bottom:1px solid #c3cbd3;max-height:min(320px,44vh);overflow-y:auto;overflow-x:hidden;display:none}
+#panels.open{display:block}
+.tabpanel{display:none;padding:8px 10px;flex-wrap:wrap}
+.tabpanel.on{display:flex;gap:0}
+.tabpanel.tworow.on{flex-direction:column;align-items:stretch;gap:0}
+.prow{display:flex;flex-wrap:wrap;width:100%}
+.prow-edit{border-top:2px solid #dbe0e6;margin-top:6px;padding-top:6px;position:relative}
+.prow-edit::before{content:"ছবি এডিট";position:absolute;top:-9px;left:6px;background:#fbfcfd;padding:0 6px;font-size:9.5px;font-weight:700;color:#a8431f}
+.prow-layout::before{content:"লেআউট";position:absolute;top:-2px;left:6px;background:#fbfcfd;padding:0 6px;font-size:9.5px;font-weight:700;color:#2f4bd8}
+.prow-layout{position:relative;padding-top:8px}
+.grp{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;border-right:1px solid #dde3e8;padding:4px 14px 8px 4px;min-height:80px}
+.gbody{display:flex;flex-wrap:wrap;align-content:flex-start;gap:6px 10px;width:max-content;max-width:640px;flex:1}
+.gbody .pr{display:flex;flex-direction:column;gap:2px}
+.grp.wide .gbody{max-width:800px}
+.grp.wide .seg{max-width:340px}
+.grp.wide .gbody>button{align-self:flex-end}
+.gname{font-size:10.5px;color:#6b7883;margin-top:3px;white-space:nowrap}
+.gbody label{display:flex;flex-direction:column;font-size:11px;width:102px;gap:1px}
+.gbody label.ck{flex-direction:row;align-items:center;width:auto;gap:5px;white-space:nowrap;padding:6px 2px}
+.gbody label b{align-self:flex-end;font-weight:700;color:#2f4bd8}
+.gbody input[type=range]{width:100%;accent-color:#2f4bd8}
+.gbody input[type=number]{width:100%;padding:3px 5px;border:1px solid #bcc5ce;border-radius:5px;font:inherit}
+.gbody .rngtop{position:relative;display:flex}
+.gbody .rngtop input[type=number]{padding-right:24px;font-weight:700;color:#2f4bd8;border-color:#a9b8e6}
+.gbody .rngtop i{position:absolute;right:7px;top:50%;transform:translateY(-50%);font-size:9.5px;color:#8993a1;font-style:normal;pointer-events:none}
+.gbody select{padding:3px 5px;border:1px solid #bcc5ce;border-radius:5px;font:inherit;max-width:150px}
+.gbody input[type=color]{width:36px;height:26px;padding:0;border:1px solid #bcc5ce;border-radius:5px}
+.gbody .lb{width:100%;font-size:10.5px;color:#3c4652}
+.gbody .seg{display:flex;flex-wrap:wrap;gap:3px;max-width:210px}
+.gbody button{font:inherit;cursor:pointer;padding:6px 10px;border:1px solid #bcc5ce;background:#fff;border-radius:6px;font-size:12px;white-space:nowrap}
+.gbody .seg button.on{background:#2f4bd8;border-color:#2f4bd8;color:#fff}
+.gbody .note{width:230px;font-size:10.5px;color:#6b7883;margin:0}
+.filmstrip{flex:0 0 auto;display:flex;gap:8px;padding:8px 12px;overflow-x:auto;background:rgba(238,241,244,.62);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid #c3cbd3}
+.th{flex:0 0 auto;width:76px;border:2px solid #d3dae0;border-radius:8px;padding:4px;background:#fff;cursor:pointer;font-size:11px;text-align:center}
+.th.on{border-color:#2f4bd8}
+.th.msel{border-color:#7c8ff0;background:#eef1fd}
+.th.on.msel{border-color:#2f4bd8;background:#eef1fd;box-shadow:0 0 0 2px #c7cffb}
+.th img{width:100%;height:56px;object-fit:cover;border-radius:4px;display:block}
+.th .row{display:flex;gap:3px;margin-top:3px;align-items:center;justify-content:center}
+.th input{width:34px;padding:2px;font-size:11px;border:1px solid #ccd3da;border-radius:4px}
+.th button.rmv{border:0;background:#fde8e6;color:#b42318;border-radius:5px;padding:0 6px;cursor:pointer}
+.th .cpm{border:1px solid #bcc5ce;background:#fff;border-radius:4px;width:18px;height:20px;padding:0;cursor:pointer;line-height:1;font-size:13px;color:#2f4bd8;font-weight:700}.th .cpm:hover{background:#eef1fd;border-color:#2f4bd8}
+.thadd{flex:0 0 auto;width:76px;height:86px;border:2px dashed #2f4bd8;border-radius:8px;background:#eef1fd;color:#2f4bd8;font-size:11px;font-weight:700;cursor:pointer}
+.stage{flex:1;display:flex;flex-direction:column;min-height:0}
+.stagebar{flex:0 0 auto;display:flex;gap:14px;align-items:center;padding:8px 14px;background:rgba(247,249,250,.62);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid #c3cbd3}
+#info{flex:1;min-width:200px;font-size:12.5px}
+.stagebar label{display:flex;align-items:center;gap:5px;font-size:12px}
+.stagebar input[type=range]{width:110px;accent-color:#2f4bd8}
+.pbtn{background:#2f4bd8;color:#fff;border:0;border-radius:8px;padding:8px 18px;font-weight:700;font-size:13px;cursor:pointer}
+#canvas{flex:1;overflow:auto;padding:22px;display:flex;flex-direction:column;align-items:center;gap:0}
+.pagewrap{display:grid;grid-template-columns:18px auto 22px;grid-template-rows:18px auto 22px;margin-bottom:20px}
+.pagewrap.nr{grid-template-columns:0 auto 0;grid-template-rows:0 auto 0}
+.pagewrap.nr .rh,.pagewrap.nr .rv,.pagewrap.nr .rcorner,.pagewrap.nr .dh,.pagewrap.nr .dv{display:none}
+.rcorner{grid-area:1/1}.rh{grid-area:1/2}.rv{grid-area:2/1}.pagewrap>.wrap{grid-area:2/2}.dv{grid-area:2/3}.dh{grid-area:3/2}
+.dh,.dv{position:relative;display:flex;align-items:center;justify-content:center;color:#2f4bd8;font-size:10.5px;font-weight:700;white-space:nowrap}
+.dh{height:18px;margin-top:4px;border-left:1px solid #2f4bd8;border-right:1px solid #2f4bd8}
+.dv{width:18px;margin-left:4px;border-top:1px solid #2f4bd8;border-bottom:1px solid #2f4bd8}
+.dh::before{content:"";position:absolute;left:0;right:0;top:50%;border-top:1px solid #2f4bd8}
+.dv::before{content:"";position:absolute;top:0;bottom:0;left:50%;border-left:1px solid #2f4bd8}
+.dh span,.dv span{position:relative;background:#d9dee3;padding:0 6px}
+.dv span{writing-mode:vertical-rl;transform:rotate(180deg);padding:6px 0}
+.mh{position:absolute;top:0;bottom:0;width:8px;cursor:col-resize;z-index:3;touch-action:none}
+.mh::after{content:"";position:absolute;left:3px;top:0;bottom:0;border-left:2px solid #2f4bd8}
+.mh:hover::after{border-color:#d0021b}
+.mhv{top:auto;bottom:auto;left:0;right:0;width:auto;height:8px;cursor:row-resize}
+.mhv::after{left:0;right:0;top:3px;bottom:auto;border-left:0;border-top:2px solid #2f4bd8}
+.rcorner{background:#e3e7ec;border:1px solid #c3cbd3;border-right:0;border-bottom:0}
+.rh{position:relative;height:18px;background:#eef1f5;border:1px solid #c3cbd3;border-bottom:0;border-left:0}
+.rh span{position:absolute;top:1px;font-size:9px;line-height:1.2;color:#3c4652}
+.rh i{position:absolute;top:0;bottom:0;background:rgba(47,75,216,.14)}
+.rv{position:relative;width:18px;background:#eef1f5;border:1px solid #c3cbd3;border-right:0;border-top:0}
+.rv span{position:absolute;left:1px;transform:rotate(180deg);writing-mode:vertical-rl;font-size:9px;line-height:1.2;color:#3c4652}
+.rv i{position:absolute;left:0;right:0;background:rgba(47,75,216,.14)}
+.wrap{background:#fff;box-shadow:0 3px 14px #0003;overflow:hidden}
+.page{position:relative;transform-origin:0 0;overflow:hidden}
+.cell{position:absolute;overflow:hidden;background:#fff;cursor:grab;border-radius:var(--r);touch-action:none}
+.cell img{position:absolute;left:50%;top:50%;max-width:none;user-select:none;pointer-events:none}
+.cell::after{content:"";position:absolute;inset:0;border-radius:inherit}
+.cell[data-bst="in"]::after{border:var(--bw) solid var(--bc)}
+.cell[data-bst="out"]{outline:var(--bw) solid var(--bc);outline-offset:0}
+.cell.sel{box-shadow:0 0 0 .7mm #2f4bd8}
+.cell.msel{box-shadow:0 0 0 .6mm #7c8ff0}
+.cell.msel.sel{box-shadow:0 0 0 .6mm #7c8ff0,0 0 0 1mm #2f4bd8}
+.cell.msel.shd{box-shadow:0 0 0 .6mm #7c8ff0,0 1.2mm 2.6mm rgba(0,0,0,.35)}
+.cell.msel.sel.shd{box-shadow:0 0 0 .6mm #7c8ff0,0 0 0 1mm #2f4bd8,0 1.2mm 2.6mm rgba(0,0,0,.35)}
+.cell.shd{box-shadow:0 1.2mm 2.6mm rgba(0,0,0,.35)}
+.cell.sel.shd{box-shadow:0 0 0 .7mm #2f4bd8,0 1.2mm 2.6mm rgba(0,0,0,.35)}
+.cell.lockd{cursor:not-allowed}
+.marginbox{position:absolute;border:.35mm dashed #d0021b;pointer-events:none}
+.wmk{position:absolute;left:50%;top:50%;white-space:nowrap;font-weight:700;pointer-events:none;user-select:none;font-family:"Hind Siliguri","Noto Sans Bengali",sans-serif}
+.gd{position:absolute;left:0;top:0}
+.gd path{stroke-width:.15;fill:none}
+.empty{position:absolute;inset:0;display:grid;place-items:center;color:#9aa5af;font-size:15px;text-align:center;padding:10px}
+.warn{color:#b45309}
+.mut{color:#6b7883;font-size:12px}
+.zoombox{display:flex;align-items:center;gap:4px;font-size:12px}
+.zb{border:1px solid #bcc5ce;background:#fff;border-radius:6px;padding:3px 9px;font:inherit;font-size:12px;cursor:pointer;white-space:nowrap}
+.zb:hover{background:#eef1fd;border-color:#2f4bd8}
+.zb.rst{min-width:54px;font-weight:700;color:#2f4bd8}
+.noimg .gbody :is(input,select,button)[data-s="i"]{opacity:.4;pointer-events:none}
+
+/* ===== ছবি ফরম্যাট ও ছবি এডিট ট্যাব (কমপ্যাক্ট রিবন) ===== */
+#pictab{display:contents}
+#tabs button.pic.on{color:#a8431f;border-color:#a8431f;background:#fdeee8cc}
+#panels.big{max-height:min(262px,40vh)}
+.pictab{display:none;padding:6px 8px 8px;gap:8px;background:#f4f6f9}
+.pictab.on{display:flex;flex-wrap:nowrap;align-items:stretch}
+.card{background:#fff;border:1px solid #d5dce3;border-radius:9px;min-width:0;display:flex;flex-direction:column;box-shadow:0 1px 2px rgba(20,35,50,.05)}
+.card-layout{flex:1.25 1 0}.card-format{flex:1 1 0}.card-edit{flex:1 1 100%}
+.chead{display:flex;align-items:center;gap:8px;padding:4px 10px;border-bottom:1px solid #e3e8ed;border-radius:9px 9px 0 0;white-space:nowrap}
+.chead .num{width:18px;height:18px;border-radius:50%;color:#fff;font-size:11px;font-weight:700;display:grid;place-items:center;flex:0 0 auto}
+.chead b{font-size:13px}
+.chead small{font-size:10.5px;color:#6b7883;overflow:hidden;text-overflow:ellipsis}
+.chead .chip{margin-left:auto;font-size:10px;font-weight:700;padding:1px 8px;border-radius:20px;flex:0 0 auto}
+.card-layout .chead{background:#eef1fd}.card-layout .num{background:#2f4bd8}.card-layout .chead b{color:#2f4bd8}.card-layout .chip{background:#dfe5fc;color:#2f4bd8}
+.card-format .chead{background:#e8f6f0}.card-format .num{background:#1b8a5a}.card-format .chead b{color:#1b8a5a}.card-format .chip{background:#cfeede;color:#1b8a5a}
+.card-edit .chead{background:#fdeee8}.card-edit .num{background:#a8431f}.card-edit .chead b{color:#a8431f}.card-edit .chip{background:#fbd9cc;color:#a8431f}
+.cbody{display:flex;flex-wrap:wrap;gap:6px;padding:6px 8px 8px;align-items:flex-start;align-content:flex-start}
+.pictab .grp{align-items:flex-start;justify-content:flex-start;border:1px solid #e1e6eb;border-radius:7px;background:#fbfcfd;padding:3px 8px 6px;min-height:0;max-width:100%}
+.pictab .gname{order:-1;margin:0 0 3px;font-size:11px;font-weight:700;color:#2b3a47;display:flex;align-items:center;gap:5px;white-space:nowrap}
+.pictab .gname .tag{font-size:9px;font-weight:700;padding:0 6px;border-radius:10px;background:#e3e8fb;color:#2f4bd8}
+.pictab .gname .tag.i{background:#fde8dd;color:#a8431f}
+.pictab .gbody{gap:4px 8px;width:auto;max-width:100%;align-content:flex-start}
+.pictab .grp.wide .gbody{max-width:100%}.pictab .grp.wide .seg{max-width:100%}
+.pictab .gbody label{width:84px;font-size:10.5px}
+.pictab .gbody label.ck{width:auto;padding:3px 2px}
+.pictab .gbody input[type=number]{padding:2px 4px}
+.pictab .gbody select{max-width:170px;padding:2px 4px}
+.pictab .gbody button{padding:3px 8px;font-size:11.5px}
+.pictab .gbody .lb{font-size:10px}
+.pictab .gbody .seg{max-width:100%}
+.pictab .note{display:none}
+.pictab .lnfo{width:auto!important;font-size:10.5px!important}
+.pictab #pic_marginGrp .gbody{max-width:330px}
+.pictab #pic_marginGrp .gbody .seg{max-width:250px}
+.filmstrip{padding:5px 12px}
+.th{width:64px;padding:3px}.th img{height:38px}.th .row{margin-top:2px}.th input{width:30px;padding:1px}
+.thadd{width:64px;height:auto;min-height:74px}
+.stagebar{padding:5px 14px}
+.card-edit .cbody{flex-direction:column;flex-wrap:nowrap;gap:6px}
+.erow{display:flex;flex-wrap:wrap;gap:6px;width:100%;align-items:stretch}
+.erow .grp{flex:0 0 auto}
+.erow:first-child .grp:nth-child(2) .gbody{max-width:300px}
+.erow:first-child .grp:nth-child(3) .gbody{flex-direction:column;gap:0}
+.erow:last-child .gbody label{width:78px}
+.card-layout .cbody{flex-direction:column;flex-wrap:nowrap;gap:6px}
+.pictab #pic_marginGrp .gbody{max-width:400px}
+.pictab #pic_marginGrp .gbody .seg{max-width:none;flex-wrap:nowrap}
+.pictab #pic_marginGrp .gbody label{width:62px}
+.pictab #pic_marginGrp .gbody label.ck{width:auto}
+.pictab .gbody .lb{width:auto;flex:0 0 auto}
+.pictab .card-layout .erow:first-child .grp:first-child .gbody{max-width:250px}
+.pictab .card-layout .erow:first-child .grp:first-child .gbody .lb{width:100%}
+.pictab #pgszTxt{width:auto!important;font-size:10px!important}
+.pictab .gbody label.ck{white-space:normal;max-width:190px}
+@media(max-width:1150px){.pictab.on{flex-wrap:wrap}.card-layout,.card-format{flex:1 1 100%}}
+@media print{
+ body,.app{display:block;height:auto}
+ .titlebar,.ribbon,.mediabar,.filmstrip,.stagebar,.rh,.rv,.rcorner,.dh,.dv,.qat,.marginbox{display:none}
+ .stage,#canvas{overflow:visible;padding:0;display:block}
+ .pagewrap{display:block;margin:0}
+ .wrap{width:auto!important;height:auto!important;margin:0;box-shadow:none;break-after:page}
+ .wrap:last-child{break-after:auto}
+ .page{transform:none!important;height:calc(var(--ph) - .6mm)!important}
+ .cell.sel,.cell.shd,.cell.sel.shd{box-shadow:none}
+ .empty{display:none}
+}
+@media(max-width:900px){
+ #panels{max-height:min(300px,42vh)}
+ .titlebar .mut{display:none}
+}
+.dk{display:none!important}body.desktop .dk{display:flex!important}body.desktop #ppPrAdd,body.desktop #ppPrDel{display:none}
+.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:#0f9d76;color:#fff;padding:11px 22px;border-radius:10px;font-weight:700;z-index:999;box-shadow:0 6px 20px #0004}.toast.err{background:#c0261b}
+/* ===== সাইজ বার ===== */
+.szbar{flex:0 0 auto;display:flex;flex-wrap:wrap;align-items:flex-end;gap:8px 12px;padding:6px 14px 7px;background:#fff;border-bottom:1px solid #c3cbd3}
+.szbar>b{align-self:center;color:#20305c;font-size:13px}
+.szbar label{display:flex;flex-direction:column;font-size:10.5px;color:#6b7883;gap:1px}
+.szbar input,.szbar select{font:inherit;font-size:13px;font-weight:700;color:#16232e;padding:4px 7px;border:1px solid #9aa6b5;border-radius:6px;background:#fff}
+.szbar input{width:96px}.szbar select{max-width:170px}
+.szbar input:focus,.szbar select:focus{outline:2px solid #2f4bd8;outline-offset:1px}
+.szbar button{height:29px;min-width:32px;border:1px solid #9aa6b5;background:#fff;border-radius:6px;cursor:pointer;font-size:14px}
+.szbar button:hover{background:#eef1fd;border-color:#2f4bd8}
+.szbar button.on{background:#2f4bd8;border-color:#2f4bd8}
+.szbar.off{opacity:.55}.szbar.off input,.szbar.off select,.szbar.off button{pointer-events:none}
+/* ===== Word-স্টাইল প্রিন্ট (Backstage) ===== */
+.prrow{display:flex;gap:6px;align-items:center}.prrow select{flex:1}.prrow button{border:1px solid #bcc5ce;background:#fff;border-radius:5px;width:30px;height:28px;cursor:pointer;font-size:14px}.prrow button:hover{background:#eef1fd;border-color:#2f4bd8}
+#pp{display:none}
+#ppm{position:fixed;inset:0;z-index:99;display:none;background:#e6e6e6;font-size:13px}
+#ppm.on{display:flex}
+.pprail{width:190px;flex:0 0 auto;background:#20305c;color:#dfe6fb;display:flex;flex-direction:column;padding:10px 0}
+.pprail button{border:0;background:transparent;color:inherit;font:inherit;text-align:left;padding:11px 20px;cursor:pointer;display:flex;gap:10px;align-items:center}
+.pprail button:hover{background:#2c4180}
+.pprail button.on{background:#f3f3f3;color:#20305c;font-weight:700}
+.pprail .bk{font-size:20px;padding:8px 20px 16px}
+.pppan{width:370px;flex:0 0 auto;background:#f3f3f3;overflow-y:auto;padding:18px 22px 24px;border-right:1px solid #cfcfcf}
+.pppan h2{margin:0 0 14px;font-size:26px;font-weight:600;color:#20305c}
+.pppan h5{margin:16px 0 6px;font-size:13px;color:#20305c;border-bottom:1px solid #d3d3d3;padding-bottom:3px}
+.ppgo{display:flex;align-items:center;gap:14px}
+.ppbtn{width:96px;height:96px;border:0;border-radius:6px;background:#2f4bd8;color:#fff;font:inherit;font-weight:700;font-size:15px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;box-shadow:0 3px 8px rgba(47,75,216,.4)}
+.ppbtn span{font-size:36px;line-height:1}
+.ppbtn:hover{background:#243fc0}
+.ppcp{display:flex;flex-direction:column;gap:3px;font-size:12px;color:#3c4652}
+.ppcp input{width:84px;padding:7px 8px;font:inherit;font-size:16px;font-weight:700;border:1px solid #9aa6b5;border-radius:5px;text-align:center}
+.wrow{display:flex;flex-direction:column;background:#fff;border:1px solid #c9d1dc;border-radius:6px;padding:5px 10px 4px;margin-bottom:7px}
+.wrow:focus-within{border-color:#2f4bd8;box-shadow:0 0 0 2px #cfd8fb}
+.wrow small{font-size:10.5px;color:#6b7883}
+.wrow select,.wrow input[type=text]{border:0;background:transparent;font:inherit;font-weight:600;color:#16232e;width:100%;outline:none;padding:2px 0;cursor:pointer}
+.wrow input[type=text]{cursor:text}
+.wrow input[type=number]{border:0;background:transparent;font:inherit;font-weight:600;color:#16232e;width:100%;outline:none;padding:2px 0}
+.wrow.ck{flex-direction:row;align-items:center;gap:8px;padding:8px 10px}
+.wrow.ck input{width:16px;height:16px}
+.pphint{font-size:11.5px;color:#6b7883;margin:2px 0 8px;line-height:1.6}
+.pphint.bad{color:#c0261b;font-weight:700}
+.ppinfo{background:#fff8e6;border:1px solid #efd9a4;border-radius:6px;padding:8px 10px;font-size:11.5px;line-height:1.7;color:#7a5200;margin-top:12px}
+.pplink{border:0;background:none;color:#2f4bd8;font:inherit;font-weight:700;cursor:pointer;padding:6px 0;text-decoration:underline}
+.ppview{flex:1;min-width:0;display:flex;flex-direction:column}
+#ppPrev{flex:1;overflow:auto;display:flex;padding:20px}
+.psheet{margin:auto;flex:0 0 auto;background:#fff;position:relative;box-shadow:0 2px 14px rgba(0,0,0,.35)}
+.ppbar{flex:0 0 auto;display:flex;align-items:center;gap:14px;padding:7px 18px;background:#f3f3f3;border-top:1px solid #cfcfcf;font-size:12.5px}
+.ppbar button{border:1px solid #bcc5ce;background:#fff;border-radius:5px;min-width:30px;height:28px;font:inherit;cursor:pointer}
+.ppbar button:hover:not(:disabled){background:#eef1fd;border-color:#2f4bd8}
+.ppbar button:disabled{opacity:.4;cursor:default}
+.ppbar input[type=number]{width:52px;height:28px;text-align:center;border:1px solid #bcc5ce;border-radius:5px;font:inherit}
+.ppbar input[type=range]{width:150px;accent-color:#2f4bd8}
+.ppbar .sp{margin-left:auto;display:flex;align-items:center;gap:8px}
+@media(max-width:860px){#ppm.on{flex-direction:column;overflow-y:auto}.pprail{display:none}.pppan{width:auto;border-right:0;overflow:visible}.ppview{min-height:70vh}}
+@media print{#ppm{display:none!important}body.pp-on .app{display:none!important}body.pp-on #pp{display:block}body.pp-on{background:#fff}.pps{position:relative;overflow:hidden;break-after:page}.pps:last-child{break-after:auto}}
+</style><style id="wordskin">
+.titlebar{background:#185abd!important;backdrop-filter:none!important;font-family:"Segoe UI","Hind Siliguri",sans-serif}
+.ribbon{background:#fff!important}#tabs{background:#fff!important;border:0!important}
+#tabs button{font-family:"Segoe UI","Hind Siliguri",sans-serif;font-weight:400!important;font-size:13px;padding:7px 12px;border-bottom:2px solid transparent}
+#tabs button.on{color:#185abd!important;border-color:#185abd!important;background:transparent!important;font-weight:600!important}
+#tabs button.pic{color:#185abd!important}#panels{background:#fff!important;box-shadow:0 1px 3px #0002}
+.wbig{display:flex;flex-direction:column;align-items:center;gap:2px;border:1px solid transparent!important;background:transparent!important;padding:6px 10px!important;min-width:64px;font:12px "Segoe UI","Hind Siliguri",sans-serif!important}
+.wbig:hover{background:#e6eefb!important;border-color:#b9cdf0!important}.wbig span{font-size:26px;line-height:1}
+.wpop{position:fixed;z-index:99;background:#fff;border:1px solid #c8c8c8;box-shadow:0 4px 14px #0003;font:13px "Segoe UI","Hind Siliguri",sans-serif;max-height:70vh;overflow:auto;min-width:230px}
+.wpop button{display:block;width:100%;text-align:left;border:0;background:#fff;padding:7px 14px;cursor:pointer;font:inherit;border-radius:0}
+.wpop button:hover,.wpop button.cur{background:#e1e1e1}.wpop small{display:block;color:#185abd;font-size:11.5px}
+.wpop hr{border:0;border-top:1px solid #ddd;margin:2px 0}
+.wdlg{position:fixed;inset:0;z-index:100;background:#0003;display:flex;align-items:center;justify-content:center}
+.wdlg>div{background:#f9f9f9;width:430px;max-width:95vw;border:1px solid #aaa;box-shadow:0 8px 28px #0005;font:13px "Segoe UI","Hind Siliguri",sans-serif}
+.wdlg h4{margin:0;padding:10px 14px;font-weight:400;display:flex;justify-content:space-between}
+.wdlg .bd{padding:6px 16px 10px;border-top:1px solid #ddd}.wdlg fieldset{border:0;border-top:1px solid #ddd;margin:8px 0;padding:6px 0}
+.wdlg legend{font-size:12px;padding-right:6px;color:#444}.wdlg .r{display:flex;align-items:center;gap:10px;margin:5px 0}
+.wdlg .r label{width:70px}.wdlg input[type=number]{width:80px;padding:3px}.wdlg .ft{display:flex;justify-content:flex-end;gap:8px;padding:10px 16px;border-top:1px solid #ddd}
+.wdlg .ft button{min-width:76px;padding:4px 10px;border:1px solid #888;background:#fff;cursor:pointer}.wdlg .ft .ok{border:2px solid #185abd}
+</style><style id="ribbon2">
+/* Word-স্টাইল: গ্রুপের নাম নিচে, কন্ট্রোল পাশাপাশি (সর্বোচ্চ ৩ সারি), রিবনের উচ্চতা সব ট্যাবে সমান */
+:root{--rowh:22px}
+.titlebar{padding:3px 12px!important;font-size:13px!important}
+#tabs{padding:0 6px!important}#tabs button{padding:5px 11px!important;font-size:12.5px!important}
+#tabs #tabpin{margin-left:0;padding:4px 10px!important;font-size:13px}
+#tabs button.pbtn{margin:3px 6px 3px auto;padding:2px 14px!important;background:#185abd;color:#fff;border:0;border-radius:4px;font-weight:600!important;font-size:12.5px!important}
+#tabs button.pbtn:hover{background:#124a9c}
+#panels{height:100px;max-height:none!important;overflow:hidden!important}
+#panels .tabpanel{padding:0 6px!important}
+#panels .tabpanel.on{display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;align-items:stretch;gap:0;height:100%;overflow-x:auto;overflow-y:hidden;background:transparent;scrollbar-width:thin}
+#panels .tabpanel.on::-webkit-scrollbar{height:7px}#panels .tabpanel.on::-webkit-scrollbar-thumb{background:#c4c4c4;border-radius:4px}
+.card{display:contents!important;border:0!important;background:none!important;box-shadow:none!important}
+.chead{display:none!important}.cbody,.erow{display:contents!important}
+#panels .grp{display:flex;flex-direction:column;flex:0 0 auto;justify-content:space-between;align-items:stretch;height:100%;min-height:0;max-width:none;padding:4px 8px 2px;margin:0;border:0;border-right:1px solid #dadada;border-radius:0;background:transparent}
+#panels .gbody{order:1;flex:1;display:grid;grid-auto-flow:column;grid-template-rows:repeat(3,var(--rowh));grid-auto-columns:max-content;gap:2px 8px;align-content:center;justify-content:start;width:auto;max-width:none;max-height:none}
+#panels .gbody>*{min-width:0;align-self:center;margin:0}
+#panels .gname{order:2;display:block;width:0;min-width:100%;margin:0;padding-top:1px;font-size:10.5px;line-height:14px;font-weight:400;color:#555;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#panels .gname .tag{display:none}
+#panels .gbody label{display:flex;flex-direction:row;align-items:center;gap:5px;width:auto;height:var(--rowh);font-size:11px;white-space:nowrap;padding:0}
+#panels .gbody label.rg{display:grid;grid-template-columns:72px 60px 44px;column-gap:5px}
+#panels .gbody label.rg input[type=range]{order:1;width:100%;height:16px;margin:0;accent-color:#185abd}
+#panels .gbody label.rg .rngtop{order:2}
+#panels .gbody .rngtop i,#panels .note{display:none}
+#panels .gbody input[type=number],#panels .gbody input[type=text]{height:20px;padding:0 3px;font-size:11px;border:1px solid #b9b9b9;border-radius:3px;text-align:center;-moz-appearance:textfield;appearance:textfield;color:#16232e;font-weight:600}
+#panels .gbody input[type=number]::-webkit-inner-spin-button,#panels .gbody input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+#panels .gbody input[type=number]{width:52px}#panels .gbody label.rg input[type=number]{width:100%}
+#panels .gbody input[type=text]{width:130px;text-align:left}
+#panels .gbody input[type=color]{width:34px;height:20px}
+#panels .gbody select{height:20px;padding:0 3px;font-size:11px;max-width:150px}
+#panels .gbody button{height:22px;padding:0 8px;font-size:11px;line-height:1;border:1px solid #c8c8c8;border-radius:3px;background:#fff;white-space:nowrap}
+#panels .gbody button:hover{background:#e6eefb;border-color:#9dbbe8}
+#panels .gbody .seg button.on{background:#185abd;border-color:#185abd;color:#fff}
+#panels .gbody .pr{display:flex;flex-direction:row;align-items:center;gap:6px;height:var(--rowh)}
+#panels .gbody .lb{width:auto;font-size:10.5px;white-space:nowrap;color:#3c4652}
+#panels .gbody .seg{display:flex;flex-wrap:nowrap;gap:2px;max-width:none}
+#panels .gbody .lnfo,#panels .gbody #pgszTxt{width:auto!important;font-size:10.5px!important;white-space:nowrap}
+#panels .gbody button.wbig{grid-row:1/4;height:auto;padding:2px 8px!important;min-width:56px;justify-content:center;border-color:transparent;background:transparent;font-size:11.5px!important}
+#panels .gbody button.wbig:hover{background:#e6eefb;border-color:#b9cdf0}
+#panels .gbody .wbig span{font-size:24px!important}
+#panels #marginGrp .gbody,#panels #pic_marginGrp .gbody{grid-auto-flow:row;grid-template-columns:repeat(3,auto);max-width:none}
+#panels #marginGrp .gbody>.pr,#panels #pic_marginGrp .gbody>.pr{grid-column:1/-1}
+#panels #marginGrp .gbody>:nth-child(5),#panels #pic_marginGrp .gbody>:nth-child(5){grid-column:2}
+#panels #marginGrp .gbody label,#panels #pic_marginGrp .gbody label{width:auto}
+#panels [data-panel=file] .note{display:block;grid-row:1/4;width:300px;white-space:normal;font-size:10.5px;line-height:1.35;overflow:hidden}
+/* ছবি যোগ + ছবির সাইজ: একই সারিতে */
+.mediabar{flex:0 0 auto;display:flex;flex-wrap:wrap;align-items:center;gap:0 16px;padding:0 10px;background:#eef1f5;border-bottom:1px solid #c3cbd3}
+.mediabar .filmstrip{flex:1 1 300px;min-width:0;align-items:center;gap:6px!important;padding:4px 0!important;background:transparent;border:0;backdrop-filter:none;-webkit-backdrop-filter:none;scrollbar-width:thin}
+.th{display:grid;grid-template-columns:32px auto;grid-template-rows:20px 20px;column-gap:6px;align-items:center;width:auto!important;padding:2px 6px 2px 2px!important;border-radius:6px}
+.th img{grid-row:1/3;width:32px;height:40px!important}
+.th .row{grid-column:2;grid-row:1;margin:0!important;justify-content:flex-start;gap:2px}
+.th input{width:34px!important;height:20px;padding:0 2px!important;font-size:11px}
+.th .mut{grid-column:2;grid-row:2;font-size:10px!important;line-height:1;white-space:nowrap}
+.thadd{position:sticky;left:0;z-index:2;order:-1;display:flex;align-items:center;gap:6px;width:auto!important;height:auto!important;min-height:0!important;align-self:stretch;padding:0 14px;font-size:12px}
+.thadd br{display:none}
+.szbar{flex-wrap:nowrap;align-items:center;gap:8px;padding:0!important;background:transparent;border:0;white-space:nowrap}
+.szbar>b{font-size:12px}.szbar label{flex-direction:row;align-items:center;gap:4px;font-size:11.5px}
+.szbar input,.szbar select{height:24px;padding:2px 4px;font-size:11.5px}.szbar input{width:72px}
+.szbar button{height:24px;min-width:28px;padding:0 6px}
+@media(max-width:1500px){#szInfo{display:none}}
+/* নিচে স্ট্যাটাস বার (Word-এর মতো) */
+.stagebar{flex:0 0 auto;gap:14px;min-height:26px;padding:2px 12px!important;background:#f3f3f3;border-top:1px solid #c3cbd3;border-bottom:0;backdrop-filter:none;-webkit-backdrop-filter:none;font-size:11.5px!important}
+#info{font-size:11.5px}#info br{display:none}#info .warn{margin-left:10px}
+.zb{padding:1px 8px;font-size:11.5px}.stagebar input[type=range]{width:120px}
+#canvas{padding:10px 22px 16px}
+@media print{.mediabar,.szbar{display:none!important}}
+</style><style id="modern">@media screen{
+:root{--ac:#3b5bdb;--ac2:#2b44b5;--ink:#0f172a;--mut:#64748b;--ln:#e2e8f0;--bg:#eef2f7}
+body{background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased}
+.titlebar{background:linear-gradient(115deg,#0b1437 0%,#1e3a8a 60%,#3b5bdb 100%)!important;padding:7px 16px!important;font-size:14px!important;letter-spacing:.2px;box-shadow:0 2px 10px rgba(11,20,55,.25);position:relative;z-index:6}
+.titlebar .mut{color:#b6c4f5}
+.qat button{border-radius:8px;transition:.15s}.qat button:hover:not(:disabled){background:rgba(255,255,255,.16)!important;border-color:transparent}
+.ribbon{box-shadow:0 4px 14px rgba(15,23,42,.07);border-bottom:1px solid var(--ln)}
+#tabs{border-bottom:1px solid var(--ln)!important;padding:0 10px!important;gap:2px}
+#tabs button{border-radius:8px 8px 0 0;color:#475569;font-weight:500!important;transition:.15s}
+#tabs button:hover{background:#f1f5f9}
+#tabs button.on,#tabs button.pic.on{color:var(--ac)!important;border-color:var(--ac)!important;background:#eef2ff!important;font-weight:600!important}
+#tabs button.pic{color:var(--ac)!important}
+#tabs button.pbtn{background:linear-gradient(135deg,#3b5bdb,#2b44b5)!important;color:#fff!important;border-radius:8px;box-shadow:0 3px 10px rgba(59,91,219,.4);padding:3px 16px!important;margin:4px 8px 4px auto}
+#tabs button.pbtn:hover{filter:brightness(1.1)}
+#panels{background:#fff!important;box-shadow:none!important}
+#panels .grp{border-right:1px solid var(--ln)!important;padding:5px 12px 3px!important}
+#panels .gname{color:var(--mut)!important;font-size:10.5px!important;letter-spacing:.3px;font-weight:500}
+#panels .gbody button,.szbar button,.zb{border-radius:7px!important;border-color:#d5dce8!important;background:#fff;transition:.15s}
+#panels .gbody button:hover,.szbar button:hover,.zb:hover{background:#eef2ff!important;border-color:var(--ac)!important;color:var(--ac)}
+#panels .gbody .seg button.on,.szbar button.on{background:var(--ac)!important;border-color:var(--ac)!important;color:#fff!important}
+#panels .gbody input[type=number],#panels .gbody input[type=text],#panels .gbody select,.szbar input,.szbar select{border-color:#d5dce8!important;border-radius:6px!important;background:#f8fafc}
+input:focus,select:focus{outline:2px solid #c7d2fe!important;outline-offset:0;border-color:var(--ac)!important}
+input[type=range]{accent-color:var(--ac)!important}
+.mediabar{background:#fff;border-bottom:1px solid var(--ln);padding:3px 14px}
+.szbar>b{color:var(--ink)}
+.th{border:1.5px solid var(--ln)!important;border-radius:10px!important;background:#fff;box-shadow:0 1px 3px rgba(15,23,42,.06);transition:.15s}
+.th:hover{border-color:#a5b4fc!important;transform:translateY(-1px)}
+.th.on{border-color:var(--ac)!important;box-shadow:0 0 0 3px #dbe4ff}
+.th img{border-radius:6px}
+.thadd{border:1.5px dashed var(--ac)!important;border-radius:10px!important;background:#eef2ff!important;color:var(--ac)!important;transition:.15s}.thadd:hover{background:#dbe4ff!important}
+#canvas{background:radial-gradient(circle,#cbd5e1 1px,transparent 1.2px) 0 0/18px 18px,#e8edf4}
+.wrap{box-shadow:0 12px 36px rgba(15,23,42,.22),0 2px 6px rgba(15,23,42,.1)!important;border-radius:2px}
+.rh,.rv,.rcorner{background:#f1f5f9;border-color:#d5dce8}
+.cell.sel{box-shadow:0 0 0 .7mm var(--ac)}
+.stagebar{background:#fff!important;border-top:1px solid var(--ln)!important}
+.zb.rst{color:var(--ac)}
+.pprail{background:linear-gradient(180deg,#0b1437,#1e3a8a)}.pprail button:hover{background:rgba(255,255,255,.12)}
+.pprail button.on{background:#f8fafc;color:#1e3a8a}
+.pppan{background:#f8fafc}.pppan h2{color:#1e3a8a}.pppan h5{color:#1e3a8a;border-color:var(--ln)}
+.ppbtn{background:linear-gradient(135deg,#3b5bdb,#2b44b5);border-radius:14px;box-shadow:0 6px 16px rgba(59,91,219,.4)}
+.wrow{border-radius:10px;border-color:var(--ln);box-shadow:0 1px 2px rgba(15,23,42,.04)}
+.ppinfo{border-radius:10px}
+.wpop,.wdlg>div{border-radius:10px;border-color:var(--ln)}
+.toast{border-radius:12px}
+}</style>
+<style id="multi">
+.th{position:relative}
+.th .mchk{position:absolute;left:4px;top:4px;width:16px;height:16px;margin:0;z-index:3;cursor:pointer;accent-color:#3b5bdb;box-shadow:0 0 0 1px #fff}
+.th.msel{border-color:#7c8ff0!important;background:#eef2ff!important}
+.thtools{position:sticky;left:0;z-index:3;order:-1;display:flex;align-items:stretch;gap:6px;padding-right:6px;background:#fff}
+.thtools .thadd{position:static;order:0}
+.gsel{display:flex;flex-direction:column;justify-content:center;gap:3px;font-size:11px;line-height:1.2;padding:2px 8px;border:1.5px solid #c7d2fe;border-radius:10px;background:#f5f7ff;white-space:nowrap}
+.gsel.act{border-color:#3b5bdb;background:#e0e7ff}
+.gsel .gb{display:flex;gap:4px}
+.gsel button{height:18px;padding:0 7px;font:inherit;font-size:10.5px;border:1px solid #c8d1e6;border-radius:5px;background:#fff;cursor:pointer}
+.gsel button:hover{background:#eef2ff;border-color:#3b5bdb}
+.szs{display:flex;align-items:center;gap:3px;font-size:11.5px}
+.szs button{min-width:0!important;padding:0 6px!important;font-size:11px!important}
+@media print{.thtools{display:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+ <div class="titlebar">🪪 পাসপোর্ট ফটো প্রিন্টার <span class="mut">— দোকানের প্রিন্ট লেআউট টুল</span>
+  <div class="qat">
+   <button data-a="new" title="নতুন প্রজেক্ট">🆕</button>
+   <span class="sep"></span>
+   <button data-a="undo" id="ubtn" title="আনডো (Ctrl+Z)">↶</button>
+   <button data-a="redo" id="rbtn" title="রিডু (Ctrl+Y)">↷</button>
+   <span class="sep"></span>
+   <button data-a="gomargin" title="মার্জিন সেটিংসে যান">📐</button>
+   <span class="sep"></span>
+   <button data-a="print" title="প্রিন্ট করুন (Ctrl+P)">🖨️</button>
+  </div>
+ </div>
+ <div class="ribbon">
+  <div id="tabs"></div>
+  <div id="panels"></div>
+ </div>
+ <div class="mediabar">
+ <div class="filmstrip" id="tl"></div>
+ <div class="szbar" id="szbar">
+  <b>📏 ছবির সাইজ</b><span class="mut" id="szName"></span>
+  <label>চওড়া<input type="number" id="szW" step="any" min="0" inputmode="decimal"></label>
+  <button type="button" id="szLk" title="অনুপাত ঠিক রাখুন (চওড়া-উচ্চতা একসাথে বদলাবে)">🔓</button>
+  <label>উচ্চতা<input type="number" id="szH" step="any" min="0" inputmode="decimal"></label>
+  <button type="button" id="szSw" title="চওড়া ↔ উচ্চতা অদলবদল (পোর্ট্রেট ↔ ল্যান্ডস্কেপ)">⇄</button>
+  <span class="szs" title="নির্বাচিত সব ছবি একসাথে ৫% ছোট / বড় হবে (অনুপাত ঠিক থাকবে)">স্কেল<button type="button" id="szDn">−৫%</button><button type="button" id="szUp">+৫%</button></span>
+  <label>একক<select id="szU"></select></label>
+  <label>প্রিসেট<select id="szP"></select></label>
+  <span class="mut" id="szInfo"></span>
+ </div>
+ </div>
+ <div class="stage">
+  <div id="canvas"><div id="pv"></div></div>
+   <div class="stagebar">
+   <div id="info"></div>
+   <div class="zoombox">🔍 জুম <button class="zb" data-a="zoomout" title="জুম কমান">−</button><input type="range" id="vz" min="10" max="400" value="100"><button class="zb" data-a="zoomin" title="জুম বাড়ান">+</button><button class="zb rst" id="vzval" data-a="zoom100" title="জুম রিসেট — ১০০% (আসল সাইজ)">100%</button><button class="zb" data-a="zoomfit" title="পুরো পেজ স্ক্রিনে ফিট করুন">🗖 ফিট</button></div>
+   </div>
+ </div>
+</div>
+<div id="ppm">
+ <div class="pprail">
+  <button class="bk" id="ppBack" title="ফিরে যান (Esc)">⬅</button>
+  <button class="on">🖨️ প্রিন্ট</button>
+  <button id="ppSetup">📐 পেজ সেটআপ</button>
+ </div>
+ <div class="pppan">
+  <h2>প্রিন্ট</h2>
+  <div class="ppgo">
+   <button class="ppbtn" id="ppGo"><span>🖨️</span>প্রিন্ট</button>
+   <div class="ppcp">কপি<input type="number" id="ppCopies" min="1" max="99" value="1"></div>
+  </div>
+  <div class="pphint" id="ppSum"></div>
+  <h5>প্রিন্টার</h5>
+  <div class="wrow"><small>প্রিন্টার (আপনার প্রিন্টারের নাম যোগ করে রাখুন)</small><div class="prrow"><select id="ppPr"></select><button type="button" id="ppPrRf" class="dk" title="প্রিন্টার তালিকা রিফ্রেশ">🔄</button><button id="ppPrAdd" title="নতুন প্রিন্টার যোগ করুন">＋</button><button id="ppPrDel" title="বাছাই করা প্রিন্টার মুছুন">🗑</button></div></div>
+  <h5>সেটিংস</h5>
+  <div class="wrow"><small>কোন পেজ</small><select id="ppMode"><option value="all">সব পেজ প্রিন্ট</option><option value="cur">শুধু এই পেজ প্রিন্ট</option><option value="rng">কাস্টম রেঞ্জ</option></select></div>
+  <div class="wrow" id="ppRw" style="display:none"><small>পেজ নম্বর (যেমন 1-3, 5)</small><input type="text" id="ppRange" placeholder="1-3, 5"></div>
+  <div class="wrow"><small>কপির ক্রম</small><select id="ppCol"><option value="1">কোলেটেড — 1,2,3 &nbsp;1,2,3</option><option value="0">আনকোলেটেড — 1,1,1 &nbsp;2,2,2</option></select></div>
+  <div class="wrow"><small>ওরিয়েন্টেশন</small><select id="ppOri"><option value="p">পোর্ট্রেট ওরিয়েন্টেশন</option><option value="l">ল্যান্ডস্কেপ ওরিয়েন্টেশন</option></select></div>
+  <div class="wrow"><small>পেপার সাইজ</small><select id="ppPap"></select></div>
+  <div class="wrow"><small>কাগজের ধরন (Paper Type)</small><select id="ppPT"></select></div><div class="wrow" id="ppPTcw" style="display:none"><small>কাগজের নাম লিখুন</small><input type="text" id="ppPTc" placeholder="যেমন: ২৬০ জিএসএম রেজিন কোটেড"></div>
+  <div class="wrow dk"><small>রঙ</small><select id="ppClr"><option value="c">রঙিন প্রিন্ট</option><option value="g">সাদা-কালো প্রিন্ট</option></select></div>
+  <label class="wrow ck dk"><input type="checkbox" id="ppSilent" checked><span>ডায়ালগ ছাড়াই সরাসরি প্রিন্ট</span></label>
+  <div class="wrow"><small>মার্জিন</small><select id="ppMar"></select></div>
+  <label class="wrow ck"><input type="checkbox" id="ppGd" checked><span>কাটার গাইড লাইন প্রিন্ট করুন</span></label>
+  <div class="wrow"><small>ছবির বাইরে কাটার লাইন (মিমি) — ০ = বর্ডারলেস, ছবির কিনার বরাবর</small><input type="number" id="ppGb" min="0" max="10" step="0.5" value="0"></div>
+  <button class="pplink" id="ppSetup2">আরও পেজ সেটআপ…</button>
+  <button class="pplink dk" id="ppPdf">📄 PDF হিসেবে সেভ করুন</button>
+  <div class="ppinfo" id="ppTip"></div>
+ </div>
+ <div class="ppview">
+  <div id="ppPrev"></div>
+  <div class="ppbar">
+   <button id="ppPv" title="আগের পেজ">◀</button>
+   <span>পেজ <input type="number" id="ppNum" min="1" value="1"> / <span id="ppTot">1</span></span>
+   <button id="ppNx" title="পরের পেজ">▶</button>
+   <div class="sp"><button id="ppZo">−</button><input type="range" id="ppZ" min="10" max="300" value="100"><button id="ppZi">+</button><span id="ppZv" style="min-width:40px">100%</span><button id="ppFit">ফিট</button></div>
+  </div>
+ </div>
+</div>
+<input type="file" id="fi" accept="image/*" multiple hidden>
+<script>
+const $=s=>document.querySelector(s),K=96/25.4,cp=(v,a,b)=>v<a?a:v>b?b:v;
+const PAGES={A4:[210,297],A3:[297,420],A5:[148,210],Letter:[215.9,279.4],'4×6 ইঞ্চি':[101.6,152.4],'5×7 ইঞ্চি':[127,177.8]};
+const PRE=[["35×45 মিমি", 35, 45, "পাসপোর্ট / ভিসা"], ["40×50 মিমি", 40, 50, "পাসপোর্ট / ভিসা"], ["45×55 মিমি", 45, 55, "পাসপোর্ট / ভিসা"], ["৩০×৪০ মিমি", 30, 40, "পাসপোর্ট / ভিসা"], ["৩৩×৪৮ মিমি", 33, 48, "পাসপোর্ট / ভিসা"], ["40×60 মিমি", 40, 60, "পাসপোর্ট / ভিসা"], ["৫০×৭০ মিমি", 50, 70, "পাসপোর্ট / ভিসা"], ["2×2 ইঞ্চি (ভিসা)", 50.8, 50.8, "পাসপোর্ট / ভিসা"], ["51×51 মিমি", 51, 51, "পাসপোর্ট / ভিসা"], ["১.৯×১.৫ ইঞ্চি (ল্যান্ডস্কেপ)", 48.26, 38.1, "ইঞ্চি সাইজ"], ["১.৫×১.৯ ইঞ্চি (পোর্ট্রেট)", 38.1, 48.26, "ইঞ্চি সাইজ"], ["১.৮৪×১.৪৫ ইঞ্চি (ল্যান্ডস্কেপ)", 46.74, 36.83, "ইঞ্চি সাইজ"], ["১.৪৫×১.৮৪ ইঞ্চি (পোর্ট্রেট)", 36.83, 46.74, "ইঞ্চি সাইজ"], ["১.৫×২ ইঞ্চি", 38.1, 50.8, "ইঞ্চি সাইজ"], ["১×১ ইঞ্চি", 25.4, 25.4, "ইঞ্চি সাইজ"], ["2R — ২.৫×৩.৫ ইঞ্চি", 63.5, 88.9, "ফটো প্রিন্ট (R সাইজ)"], ["3R — ৩.৫×৫ ইঞ্চি", 88.9, 127, "ফটো প্রিন্ট (R সাইজ)"], ["4R — ৪×৬ ইঞ্চি", 101.6, 152.4, "ফটো প্রিন্ট (R সাইজ)"], ["5R — ৫×৭ ইঞ্চি", 127, 177.8, "ফটো প্রিন্ট (R সাইজ)"], ["6R — ৬×৮ ইঞ্চি", 152.4, 203.2, "ফটো প্রিন্ট (R সাইজ)"], ["8R — ৮×১০ ইঞ্চি", 203.2, 254, "ফটো প্রিন্ট (R সাইজ)"], ["10R — ১০×১২ ইঞ্চি", 254, 304.8, "ফটো প্রিন্ট (R সাইজ)"], ["A6 — ১০৫×১৪৮ মিমি", 105, 148, "ফটো প্রিন্ট (R সাইজ)"], ["স্ট্যাম্প 20×25 মিমি", 20, 25, "স্ট্যাম্প / ছোট"], ["25×30 মিমি", 25, 30, "স্ট্যাম্প / ছোট"], ["২৫×৩৫ মিমি", 25, 35, "স্ট্যাম্প / ছোট"], ["কাস্টম", 0, 0, "কাস্টম"]];
+const S={imgs:[],sel:-1,msel:[],tab:'home',pw:'A4',o:'p',lock:true,mt:.12,mr:.12,mb:.12,ml:.12,bl:false,pbg:'#ffffff',ha:'j',va:'t',gm:'t',go:0,gl:3,gb:2,gc:'#555555',vz:100,ruler:true,mgd:true,wmt:'',wms:18,wmc:'#888888',wmo:15,wmr:-30};
+const INIT_S=JSON.parse(JSON.stringify(S));
+const IN2MM=25.4,MM=k=>S[k]*IN2MM;
+const DS={pre:PRE.findIndex(p=>p[0].startsWith('১.৮৪×১.৪৫')),w:46.74,h:36.83,cols:0,nl:false,auto:false,lines:1};
+const ADV=['dn','sm','sh','ex','sd','hl','wm','ti','sk','st','vb','wh'];
+const D={fit:'cover',z:1,x:0,y:0,rot:0,fr:0,flip:false,vflip:false,op:100,lck:false,br:100,ct:100,sat:100,gray:false,dn:0,sm:0,sh:0,ex:0,sd:0,hl:0,wm:0,ti:0,sk:0,st:0,vb:0,wh:0,bw:0,bc:'#000000',rad:0,bst:'in',shd:false,gx:0,gy:0};
+const R=(k,l,min,max,step,u)=>({k,t:'rng',l,min,max,step,u});
+const SZ={cls:'wide',name:'সাইজ ও সংখ্যা (নির্বাচিত ছবি)',scope:'i',items:[{k:'pre',t:'sel',l:'প্রিসেট সাইজ',o:PRE.map((p,i)=>[i,p[0]])},{k:'w',t:'num',l:'চওড়া (মিমি)'},{k:'h',t:'num',l:'উচ্চতা (মিমি)'},{t:'ori'},{k:'lines',t:'num',l:'কয় লাইন',min:1,max:50,step:1},{k:'copies',t:'num',l:'মোট কপি',min:0,max:200,step:1},{k:'auto',t:'chk',l:'⚡ অটো: লাইনের বাকি জায়গা ভরে দিন'},{t:'lnfo'},{k:'cols',t:'seg',l:'এক লাইনে',tip:'অটো = লাইনে যত ধরে তত',o:[[0,'অটো'],[1,'১'],[2,'২'],[3,'৩'],[4,'৪'],[5,'৫'],[6,'৬'],[7,'৭'],[8,'৮']]},{k:'nl',t:'chk',l:'↵ নতুন লাইনে শুরু'},{t:'act',a:'fill',l:'🧩 পেজ ভরান'}]};
+const GROUPS=[
+ {tab:'file',name:'ফাইল',items:[{t:'act',a:'new',l:'🆕 নতুন প্রজেক্ট'},{t:'act',a:'addphoto',l:'📂 ছবি আপলোড'},{t:'act',a:'print',l:'🖨️ প্রিন্ট করুন'}]},
+ {tab:'file',name:'সাইজ যাচাই',items:[{t:'act',a:'calibrate',l:'📐 ক্যালিব্রেশন পেজ প্রিন্ট করুন'},{t:'n',l:'A4-তে একটি ১০০×১০০ মিমি বর্গ ও রুলার প্রিন্ট হবে। ফিজিক্যাল স্কেলে মেপে নিশ্চিত হোন প্রিন্ট আসল সাইজে হচ্ছে।'}]},
+ {tab:'file',name:'প্রিন্ট সেটিং মনে রাখুন',items:[{t:'n',l:'প্রিন্ট ডায়ালগে Margins: None, Scale: 100% (Fit to page বন্ধ), Print quality: High রাখুন।'}]},
+ {tab:'file',name:'ফিচার',items:[{t:'n',l:'✨ এই টুলের সব ফিচার — এডিটিং, এনহ্যান্স, ওয়াটারমার্ক, লেআউট — সম্পূর্ণ ফ্রি ও চিরস্থায়ী। কোনো সাবস্ক্রিপশন বা লগইন লাগবে না।'}]},
+ {tab:'home',name:'ছবি',items:[{t:'act',a:'addphoto',l:'📂 ছবি যোগ করুন'},{t:'act',a:'selall',l:'☑️ সব সিলেক্ট'},{t:'act',a:'selnone',l:'☐ সিলেকশন বাতিল'},{t:'act',a:'oneline',l:'↔️ এক লাইনে মিলান'},{t:'act',a:'c1',l:'1️⃣ সবার ১টি করে কপি'},{t:'act',a:'dup',l:'📋 কপি তৈরি'},{t:'act',a:'del',l:'🗑️ মুছুন'},{t:'n',l:'আলাদা আলাদা ছবি একই লাইনে পাশাপাশি বসে, লাইন ভরলে নিচের লাইনে যায়। “এক লাইনে মিলান” বোতামে (টিক দেওয়া বা সব) ছবির কপি ভাগ হয়ে একটি লাইন ঠিক ভরে যায়। ফিল্মস্ট্রিপে প্রতিটি ছবির কোণার ☑ টিকবক্সে টিক দিয়ে যেই ছবিগুলো একসাথে এডিট করতে চান বেছে নিন (Ctrl/⌘ বা Shift চেপে ক্লিকও চলবে)। ঘোরানো, সাইজ, স্কেল, ক্রপ, এনহ্যান্স, বর্ডার, ফাঁক — সবই শুধু টিক দেওয়া ছবিগুলোতে একসাথে প্রযোজ্য হবে।'}]},
+ {tab:'home',...SZ},
+ {tab:'view',name:'জুম',items:[{t:'act',a:'zoom100',l:'🔍 ১০০%'},{t:'act',a:'zoomfit',l:'🗖 পেজ ফিট করুন'}]},
+ {tab:'view',name:'দেখান',items:[{k:'ruler',t:'chk',l:'📏 রুলার ও পেজ সাইজ (ইঞ্চি) দেখান'},{k:'mgd',t:'chk',l:'📐 মার্জিন গাইড দেখান'}]},
+ {tab:'insert',name:'ছবি সংযোজন',items:[{t:'act',a:'addphoto',l:'📂 কম্পিউটার থেকে ছবি'},{t:'n',l:'ছবি টেনে এনে এই পেজে ছাড়তে পারবেন, অথবা কপি করে এখানে Ctrl+V দিয়ে পেস্ট করতে পারবেন।'}]},
+ {tab:'design',name:'বর্ডার (নির্বাচিত ছবি)',scope:'i',items:[{k:'bst',t:'seg',l:'বর্ডারের ধরন',o:[['in','ভিতরে'],['out','বাইরে']]},R('bw','বর্ডার',0,5,.1,' মিমি'),{k:'bc',t:'color',l:'বর্ডারের রং'},R('rad','কোণা গোল',0,10,.5,' মিমি'),{k:'shd',t:'chk',l:'🖤 ছায়া (শুধু স্ক্রিনে)'},{t:'n',l:'এই বর্ডার শুধু এখন যে ছবি/ছবিগুলো সিলেক্ট করা আছে সেগুলোতেই বসবে। একাধিক ছবিতে একসাথে দিতে ফিল্মস্ট্রিপে Ctrl (Mac: ⌘) চেপে একে একে ছবি ক্লিক করুন, বা Shift চেপে রেঞ্জ সিলেক্ট করুন।'}]},
+ {tab:'design',name:'পেজ ব্যাকগ্রাউন্ড',scope:'g',items:[{k:'pbg',t:'color',l:'রং'}]},
+ {tab:'design',name:'কাটার গাইড',scope:'g',items:[{k:'gm',t:'seg',l:'গাইডের ধরন',o:[['n','নেই'],['b','শুধু কাটার লাইন'],['t','চার কোনায় দাগ'],['f','পুরো লাইন']]},R('gb','ছবির বাইরে কাটার লাইন',0,10,.5,' মিমি'),R('go','দাগ শুরুর দূরত্ব',0,5,.25,' মিমি'),R('gl','দাগের দৈর্ঘ্য',1,15,.5,' মিমি'),{k:'gc',t:'color',l:'দাগের রং'},{t:'n',l:'বর্ডারলেস ছবির জন্য "ছবির বাইরে কাটার লাইন" ০ রাখুন — দাগ ঠিক ছবির কিনার বরাবর পড়বে। বর্ডারসহ ছাপতে চাইলে এখানে ১–৫ মিমি দিন — প্রতিটি ছবির চারদিকে ততটুকু সাদা জায়গা রেখে কাটার দাগ পড়বে, ছবির উপর কোনো দাগ পড়বে না। দুই ছবির মাঝে একটাই দাগ পড়ে — ঠিক মাঝখান বরাবর কাটুন (ডিফল্ট ২ মিমি — A4 পোর্ট্রেটে এক লাইনে ৪টির জন্য সর্বোচ্চ প্রায় ২ মিমি)।'}]},
+ {tab:'design',name:'ওয়াটারমার্ক',scope:'g',items:[{k:'wmt',t:'txt',l:'টেক্সট',ph:'যেমনঃ স্টুডিও নাম'},R('wms','সাইজ',6,60,1,' মিমি'),{k:'wmc',t:'color',l:'রং'},R('wmo','স্বচ্ছতা',0,100,1,'%'),R('wmr','কোণ',-90,90,1,'°')]},
+ {tab:'layout',name:'পেজ সেটাপ',scope:'g',items:[{k:'pw',t:'sel',l:'কাগজের সাইজ',o:Object.keys(PAGES).map(k=>[k,k+' — '+(PAGES[k][0]/25.4).toFixed(2)+'×'+(PAGES[k][1]/25.4).toFixed(2)+'″'])},{k:'o',t:'seg',l:'পেজের দিক',o:[['p','পোর্ট্রেট'],['l','ল্যান্ডস্কেপ']]},{t:'pgsz'}]},
+ {tab:'layout',name:'মার্জিন (ইঞ্চি)',id:'marginGrp',scope:'g',items:[{t:'mpre',vals:[0,.12,.5,1,1.5,2,3]},{k:'lock',t:'chk',l:'🔗 চার দিকে সমান'},{k:'mt',t:'num',l:'⬆️ উপর',min:0,max:3,step:.01},{k:'mr',t:'num',l:'➡️ ডান',min:0,max:3,step:.01},{k:'mb',t:'num',l:'⬇️ নিচ',min:0,max:3,step:.01},{k:'ml',t:'num',l:'⬅️ বাম',min:0,max:3,step:.01}]},
+ {tab:'layout',name:'বর্ডারলেস প্রিন্ট',scope:'g',items:[{k:'bl',t:'chk',l:'Epson L8050 বর্ডারলেস'},{t:'n',l:'টিক দিলে প্রিন্ট ডায়ালগে Paper size: A4 borderless বাছুন। ড্রাইভার ছবি সামান্য বড় করে ছাপে, তাই ছবি কিনার থেকে ৩–৪ মিমি ভেতরে রাখুন।'}]},
+ {tab:'layout',name:'ফাঁক (নির্বাচিত ছবি)',scope:'i',items:[R('gx','পাশাপাশি ফাঁক',0,40,.5,' মিমি'),R('gy','উপর-নিচ ফাঁক',0,40,.5,' মিমি'),{t:'n',l:'এই ফাঁক শুধু এখন যে ছবি সিলেক্ট করা আছে সেই ছবির কপি/লাইনে প্রয়োগ হবে, বাকি ছবিগুলো নিজ নিজ আগের মান অনুযায়ী জায়গায় থাকবে। একাধিক ছবিতে একসাথে বসাতে ফিল্মস্ট্রিপে Ctrl (Mac: ⌘) চেপে ছবি সিলেক্ট করুন, বা Shift চেপে রেঞ্জ সিলেক্ট করুন।'}]},
+ {tab:'layout',name:'সাজানো (পুরো পেজ)',scope:'g',items:[{k:'ha',t:'seg',l:'অনুভূমিক',o:[['l','বামে'],['c','মাঝে'],['r','ডানে'],['j','ছড়িয়ে']]},{k:'va',t:'seg',l:'উল্লম্ব',o:[['t','উপরে'],['c','মাঝে'],['j','ছড়িয়ে']]}]},
+ {tab:'layout',name:'ঘোরানো',scope:'i',items:[{t:'act',a:'rl',l:'↺ বামে ঘোরান'},{t:'act',a:'rr',l:'↻ ডানে ঘোরান'},{t:'act',a:'reset',l:'⟲ রিসেট'}]},
+ {tab:'picture',...SZ},
+ {tab:'picture',name:'ক্রপ ও অবস্থান',scope:'i',items:[{k:'fit',t:'seg',l:'বসানো',o:[['cover','ক্রপ'],['fill','স্ট্রেচ'],['contain','পুরোটা']]},R('z','জুম',.5,4,.01,'×'),R('x','বাঁ-ডান',-100,100,1,'%'),R('y','উপর-নিচ',-100,100,1,'%'),R('fr','সোজা করুন',-10,10,.1,'°'),R('op','অপাসিটি',0,100,1,'%'),{k:'lck',t:'chk',l:'🔒 অবস্থান লক'}]},
+ {tab:'picture',name:'ঘোরানো',scope:'i',items:[{t:'act',a:'rl',l:'↺ বামে ঘোরান'},{t:'act',a:'rr',l:'↻ ডানে ঘোরান'},{t:'act',a:'reset',l:'⟲ রিসেট'}]},
+ {tab:'picture',name:'দ্রুত এনহ্যান্স',scope:'i',items:[{t:'act',a:'auto',l:'✨ অটো এনহ্যান্স'},{t:'act',a:'skin',l:'🎨 ত্বক সুন্দর'},{t:'act',a:'bg',l:'⚪ সাদা ব্যাকগ্রাউন্ড'},{t:'act',a:'warm',l:'🔥 উষ্ণ টোন'},{t:'act',a:'cool',l:'❄️ শীতল টোন'},{t:'act',a:'vint',l:'🎞️ ভিনটেজ'}]},
+ {tab:'picture',name:'আলো ও রং',scope:'i',items:[R('br','উজ্জ্বলতা',50,150,1,'%'),R('ct','কনট্রাস্ট',50,150,1,'%'),R('ex','এক্সপোজার',-100,100,1,''),R('sd','ছায়া উজ্জ্বল',0,100,1,''),R('hl','হাইলাইট কমান',0,100,1,''),R('wm','উষ্ণতা',-50,50,1,''),R('ti','টিন্ট',-50,50,1,''),R('vb','ভাইব্র্যান্স',0,100,1,'')]},
+ {tab:'picture',name:'ত্বক',scope:'i',items:[R('sm','মসৃণ করুন',0,100,1,''),R('sk','উজ্জ্বল করুন',0,100,1,''),R('st','টোন',-50,50,1,'')]},
+ {tab:'picture',name:'ক্লিন ও শার্প',scope:'i',items:[R('dn','নয়েজ কমান',0,100,1,''),R('sh','শার্পনেস',0,100,1,''),R('wh','সাদা ক্লিন',0,100,1,'')]},
+ {tab:'picture',name:'অন্যান্য',scope:'i',items:[{k:'gray',t:'chk',l:'সাদা-কালো'},{k:'flip',t:'chk',l:'আয়না ফ্লিপ (আনুভূমিক)'},{k:'vflip',t:'chk',l:'আয়না ফ্লিপ (উলম্ব)'}]}];
+const TABS=[['file','File','নতুন, প্রিন্ট, ক্যালিব্রেশন'],['home','Home','ছবি যোগ করুন'],['insert','Insert','কম্পিউটার থেকে ছবি'],['design','Design','সাইজ, বর্ডার, ব্যাকগ্রাউন্ড, ওয়াটারমার্ক'],['layout','Layout','পেজ সাইজ, মার্জিন, সাজানো'],['view','View','জুম, রুলার, গাইড']];
+const G=GROUPS.filter(g=>(g.scope||'g')==='g').flatMap(g=>g.items).filter(c=>c.k);
+const E=GROUPS.filter(g=>g.scope==='i').flatMap(g=>g.items).filter(c=>c.k);
+function ctl(c,s){
+ if(c.t==='n')return `<p class="mut note">${c.l}</p>`;
+ if(c.t==='lnfo')return `<div class="lnfo"></div>`;
+ if(c.t==='act')return `<button data-a="${c.a}">${c.l}</button>`;
+ if(c.t==='copies')return `<label>কপি সংখ্যা<input type="number" min="0" max="200" data-k="copies" data-s="i"></label>`;
+ if(c.t==='ori')return `<div class="pr"><div class="lb">ছবির দিক</div><div class="seg"><button data-ori="p">পোর্ট্রেট</button><button data-ori="l">ল্যান্ডস্কেপ</button></div></div>`;
+ const a=`data-k="${c.k}" data-s="${s}"`;
+ if(c.t==='rng')return `<label class="rg" title="${c.l}${c.u?' ('+c.u.trim()+')':''}">${c.l}<span class="rngtop"><input type="number" class="rngnum" ${a} min="${c.min}" max="${c.max}" step="${c.step}"><i class="u">${c.u||''}</i></span><input type="range" ${a} min="${c.min}" max="${c.max}" step="${c.step}"></label>`;
+ if(c.t==='num')return `<label>${c.l}<input type="number" ${a} min="${c.min??1}" max="${c.max??3000}" step="${c.step??'any'}"></label>`;
+ if(c.t==='mpre')return `<div class="pr"><span class="lb">দ্রুত মার্জিন</span><div class="seg">${c.vals.map(v=>`<button type="button" data-a="mset" data-mv="${v}">${v}″</button>`).join('')}</div></div>`;
+ if(c.t==='pgsz')return `<div class="pr"><span class="lb">প্রকৃত সাইজ</span><span class="mut" id="pgszTxt"></span></div>`;
+ if(c.t==='chk')return `<label class="ck"><input type="checkbox" ${a}>${c.l}</label>`;
+ if(c.t==='color')return `<label>${c.l}<input type="color" ${a}></label>`;
+ if(c.t==='txt')return `<label>${c.l}<input type="text" ${a} maxlength="60" placeholder="${c.ph||''}"></label>`;
+ if(c.t==='sel')return `<label>${c.l}<select ${a}>${c.o.map((o,i)=>`<option value="${i}">${o[1]}</option>`).join('')}</select></label>`;
+ return `<div class="pr"${c.tip?` title="${c.tip}"`:''}><div class="lb">${c.l}</div><div class="seg">${c.o.map((o,i)=>`<button ${a} data-v="${i}">${o[1]}</button>`).join('')}</div></div>`}
+const TIP=g=>{const n=g.items.find(x=>x.t==='n');return n?` title="${n.l.replace(/"/g,'&quot;')}"`:''};
+function grpHtml(g,idPrefix){return `<div class="grp${g.cls?' '+g.cls:''}"${g.id?` id="${idPrefix||''}${g.id}"`:''}${TIP(g)}><div class="gbody">${g.items.map(it=>ctl(it,g.scope||'g')).join('')}</div><div class="gname">${g.name}</div></div>`}
+function buildRibbon(){
+ const ids=[...TABS.map(t=>t[0]),'picture','edit'];
+ $('#tabs').innerHTML=TABS.map(([id,l,d])=>`<button data-tab="${id}" class="${id===S.tab?'on':''}" title="${d||''}">${l}</button>`).join('')+`<span id="pictab"><button data-tab="picture" class="pic${S.tab==='picture'?' on':''}" title="লেআউট, ছবির সাইজ ও সংখ্যা, ঘোরানো">Picture Format</button><button data-tab="edit" class="pic${S.tab==='edit'?' on':''}" title="ক্রপ, এনহ্যান্স, আলো-রং, ত্বক, ক্লিন ও অন্যান্য">Picture Edit</button></span><button type="button" class="pbtn" data-a="print" title="প্রিন্ট করুন (Ctrl+P)">🖨️ প্রিন্ট করুন</button><button id="tabpin" data-a="ribbontoggle" title="রিবন লুকান / দেখান">⌃</button>`;
+ const P=n=>GROUPS.find(g=>g.tab==='picture'&&g.name.startsWith(n));
+ const pg=(g,pre,forceI)=>{const nm=g.name.replace(/\s*\((?:শুধু )?(?:সিলেক্ট করা|নির্বাচিত) ছবি\)/,'');
+  const sc=forceI?'i':(g.scope||'g');const tag=sc==='i'?'<span class="tag i">নির্বাচিত ছবি</span>':'<span class="tag">পুরো পেজ</span>';
+  const tip=(g.items.find(x=>x.t==='n')||{}).l||'';
+  return `<div class="grp${g.cls?' '+g.cls:''}"${g.id?` id="${pre||''}${g.id}"`:''}${tip?` title="${tip.replace(/"/g,'&quot;')}"`:''}><div class="gname">${nm}${tag}</div><div class="gbody">${g.items.map(it=>ctl(it,g.scope||'g')).join('')}</div></div>`};
+ const card=(cls,n,title,sub,chip,body)=>`<section class="card ${cls}"><div class="chead"><span class="num">${n}</span><b>${title}</b><small>${sub}</small><span class="chip">${chip}</span></div><div class="cbody">${body}</div></section>`;
+ $('#panels').innerHTML=ids.map(id=>{
+  const on=id===S.tab?' on':'';
+  if(id==='picture'){
+   const L=GROUPS.filter(g=>g.tab==='layout'),F=[P('সাইজ ও সংখ্যা'),P('ঘোরানো')];
+   return `<div class="tabpanel pictab${on}" data-panel="picture">`
+    +card('card-layout','১','Layout','কাগজ, মার্জিন, ফাঁক, সাজানো','পুরো পেজের সেটিং',`<div class="erow">${L.slice(0,2).map(g=>pg(g,'pic_')).join('')}</div><div class="erow">${L.slice(2).map(g=>pg(g,'pic_')).join('')}</div>`)
+    +card('card-format','২','🖼️ ছবি ফরম্যাট','সাইজ, কপি সংখ্যা, ঘোরানো','নির্বাচিত ছবি',F.map(g=>pg(g,'',g.name==='ঘোরানো')).join(''))
+    +`</div>`}
+  if(id==='edit'){
+   const E2=['ক্রপ ও অবস্থান','দ্রুত এনহ্যান্স','অন্যান্য','আলো ও রং','ত্বক','ক্লিন ও শার্প'].map(P);
+   return `<div class="tabpanel pictab${on}" data-panel="edit">`+card('card-edit','৩','ছবি এডিট','ক্রপ, আলো-রং, ত্বক, ক্লিন ও অন্যান্য — শুধু নির্বাচিত ছবিতে প্রযোজ্য','নির্বাচিত ছবি',`<div class="erow">${E2.slice(0,3).map(g=>pg(g,'')).join('')}</div><div class="erow">${E2.slice(3).map(g=>pg(g,'')).join('')}</div>`)+`</div>`}
+  return `<div class="tabpanel${on}" data-panel="${id}">${GROUPS.filter(g=>g.tab===id).map(g=>grpHtml(g)).join('')}</div>`
+ }).join('')}
+let panelOpen=true;function pinSync(){const p=$('#tabpin');if(p)p.textContent=panelOpen?'⌃':'⌄'}
+function showTab(id,open){S.tab=id;if(open!==undefined)panelOpen=open;
+ document.querySelectorAll('#tabs [data-tab]').forEach(b=>b.classList.toggle('on',b.dataset.tab===id));
+ document.querySelectorAll('#panels [data-panel]').forEach(p=>p.classList.toggle('on',p.dataset.panel===id));
+ $('#panels').classList.toggle('open',panelOpen);$('#panels').classList.toggle('big',id==='picture'||id==='edit');pinSync()}
+function closePanel(){panelOpen=false;$('#panels').classList.remove('open');pinSync()}
+function toggleTab(id){if(S.tab===id&&panelOpen)return closePanel();showTab(id,true)}
+function bn2(n){return String(n).replace(/\d/g,d=>'০১২৩৪৫৬৭৮৯'[d])}
+function presetOf(o){const i=PRE.findIndex(p=>p[1]&&Math.abs(p[1]-o.w)<.02&&Math.abs(p[2]-o.h)<.02);return i>=0?i:PRE.length-1}
+function list(){const sel=S.msel&&S.msel.length?S.msel:(S.sel>=0?[S.sel]:[]),ns=selTargets().length;
+ const gbox=S.imgs.length>1?`<div class="gsel${ns>1?' act':''}"><span><b>☑ একসাথে এডিট</b> · ${ns>1?bn2(ns)+'টি ছবি নির্বাচিত':'ছবির কোণায় টিক দিন'}</span><span class="gb"><button type="button" data-a="selall">সব সিলেক্ট</button><button type="button" data-a="selnone">বাতিল</button></span></div>`:'';
+ $('#tl').innerHTML=S.imgs.map((m,i)=>`<div class="th${i===S.sel?' on':''}${(S.msel&&S.msel.length>1&&S.msel.includes(i))?' msel':''}" data-th="${i}"><input type="checkbox" class="mchk" data-msc="${i}" title="টিক দিন — টিক দেওয়া ছবিগুলো একসাথে এডিট হবে" ${sel.includes(i)?'checked':''}><img src="${m.src}" alt=""><div class="row"><button class="cpm" data-cpm="-1" data-i="${i}" title="১টি কমান">−</button><input type="number" min="0" max="200" value="${eff(m)}" data-cp="${i}"><button class="cpm" data-cpm="1" data-i="${i}" title="১টি বাড়ান">+</button><button class="rmv" data-rm="${i}" title="ছবি মুছুন">×</button></div><span class="mut" style="font-size:10px">${+m.w}×${+m.h} · কপি</span></div>`).join('')+`<div class="thtools"><button class="thadd" data-a="addphoto">➕<br>ছবি যোগ</button>${gbox}</div>`}
+function toggleMsel(i){const cur=S.msel&&S.msel.length?S.msel:(S.sel>=0?[S.sel]:[]);
+ if(cur.includes(i)){if(cur.length<2){list();return}S.msel=cur.filter(x=>x!==i);if(S.sel===i)S.sel=S.msel[S.msel.length-1]}
+ else{S.msel=[...cur,i];S.sel=i}
+ $('#pictab').style.display=S.sel>=0?'':'none';list();sync();draw()}
+function sync(){document.querySelectorAll('[data-k]').forEach(el=>{const g=el.dataset.s==='g',o=g?S:S.imgs[S.sel];if(!o)return;const k=el.dataset.k,v=k==='copies'&&!g?eff(o):o[k];
+ if(el.tagName==='BUTTON'){const c=(g?G:E).find(x=>x.k===k);el.classList.toggle('on',c.o[el.dataset.v][0]===v)}
+ else if(el.type==='checkbox')el.checked=v;
+ else if(el.tagName==='SELECT')el.value=(g?G:E).find(x=>x.k===k).o.findIndex(a=>a[0]===v);
+ else if(document.activeElement!==el)el.value=v});
+ document.querySelectorAll('[data-out]').forEach(b=>{const o=b.dataset.out[0]==='g'?S:S.imgs[S.sel];if(o){const v=o[b.dataset.out.slice(1)];b.textContent=(typeof v==='number'?Math.round(v*100)/100:v)+b.dataset.u}});
+ document.querySelectorAll('[data-ori]').forEach(b=>b.classList.toggle('on',(()=>{const im=S.imgs[S.sel];return !!im&&(b.dataset.ori==='p')===(im.h>=im.w)})()));
+ document.querySelectorAll('[data-cp]').forEach(inp=>{const i=+inp.dataset.cp;if(S.imgs[i]&&document.activeElement!==inp)inp.value=eff(S.imgs[i])});
+ document.body.classList.toggle('noimg',S.sel<0);document.querySelectorAll('[data-mv]').forEach(b=>b.classList.toggle('on',[S.mt,S.mr,S.mb,S.ml].every(x=>Math.abs(x-+b.dataset.mv)<.001)));const cim=S.imgs[S.sel];document.querySelectorAll('.lnfo').forEach(e=>{e.textContent=cim?`এক লাইনে ধরে ${fitCols(cim,geo())}টি · মোট ${eff(cim)}টি`:''});document.querySelectorAll('#pgszTxt').forEach(pz=>pz.textContent=pageSizeText());syncZoom();if(window.szReady)szSync()}
+function selTargets(){return S.msel&&S.msel.length>1?S.msel.filter(i=>i>=0&&i<S.imgs.length):(S.sel>=0?[S.sel]:[])}
+function setv(el){const k=el.dataset.k,g=el.dataset.s==='g';
+ if(g){const o=S,c=G.find(x=>x.k===k);let v;
+  if(el.tagName==='BUTTON')v=c.o[el.dataset.v][0];else if(el.type==='checkbox')v=el.checked;else if(el.tagName==='SELECT')v=c.o[el.value][0];else if(el.type==='color'||el.type==='text')v=el.value;else{v=+el.value;if(c.min!==undefined&&c.max!==undefined&&!isNaN(v))v=cp(v,c.min,c.max)}
+  o[k]=v;
+  if(['mt','mr','mb','ml'].includes(k)&&S.lock)S.mt=S.mr=S.mb=S.ml=v;if(k==='lock'&&v)S.mr=S.mb=S.ml=S.mt;
+  sync();draw();return}
+ const targets=selTargets();if(!targets.length)return;
+ const c=E.find(x=>x.k===k);let v;
+ if(el.tagName==='BUTTON')v=c.o[el.dataset.v][0];else if(el.type==='checkbox')v=el.checked;else if(el.tagName==='SELECT')v=c.o[el.value][0];else if(el.type==='color'||el.type==='text')v=el.value;else{v=+el.value;if(c.min!==undefined&&c.max!==undefined&&!isNaN(v))v=cp(v,c.min,c.max)}
+ if((k==='w'||k==='h')&&!(v>=1))return;let needList=false;
+ targets.forEach(idx=>{const o=S.imgs[idx];if(!o)return;o[k]=v;
+  if(k==='pre'&&PRE[v][1]){o.w=PRE[v][1];o.h=PRE[v][2];o.cols=0}if(k==='w'||k==='h')o.pre=PRE.length-1;if(k==='copies'){o.copies=cp(Math.round(v)||0,0,200);o.auto=false}if(k==='lines'){o.lines=cp(Math.round(v)||1,1,50);o.auto=true}if(k==='auto'&&!v){o.auto=true;const e=eff(o);o.auto=false;o.copies=e}
+  if(ADV.includes(k)){clearTimeout(o.tm);o.tm=setTimeout(()=>proc(o),150)}
+  if(['pre','w','h','copies','cols','lines','auto'].includes(k))needList=true});
+ if(needList)list();
+ sync();draw()}
+function bb(s,w,h,r){const t=new Uint8ClampedArray(s.length),o=new Uint8ClampedArray(s.length),n=2*r+1;
+ for(let y=0;y<h;y++)for(let c=0;c<3;c++){let a=0;const b=y*w*4+c;for(let i=-r;i<=r;i++)a+=s[b+cp(i,0,w-1)*4];
+  for(let x=0;x<w;x++){t[b+x*4]=a/n;a+=s[b+Math.min(w-1,x+r+1)*4]-s[b+Math.max(0,x-r)*4]}}
+ for(let x=0;x<w;x++)for(let c=0;c<3;c++){let a=0;const b=x*4+c;for(let i=-r;i<=r;i++)a+=t[b+cp(i,0,h-1)*w*4];
+  for(let y=0;y<h;y++){o[b+y*w*4]=a/n;a+=t[b+Math.min(h-1,y+r+1)*w*4]-t[b+Math.max(0,y-r)*w*4]}}
+ for(let i=3;i<o.length;i+=4)o[i]=255;return o}
+const skin=(r,g,b)=>{const cb=128-.1687*r-.3313*g+.5*b,cr=128+.5*r-.4187*g-.0813*b;return(1-cp((Math.abs(cb-102)-20)/12,0,1))*(1-cp((Math.abs(cr-153)-16)/12,0,1))};
+function proc(m){if(!m.base)return;
+ if(!ADV.some(k=>m[k])){m.tk=(m.tk||0)+1;if(m.src!==m.orig){URL.revokeObjectURL(m.src);m.src=m.orig}list();return draw()}
+ const{width:w,height:h,data:b}=m.base,d=new Uint8ClampedArray(b),N=w*h*4,bl=(a,r)=>bb(bb(a,w,h,r),w,h,r),L=(a,i)=>.3*a[i]+.59*a[i+1]+.11*a[i+2];
+ if(m.dn){const B=bl(d,1+(m.dn/40|0)),s=m.dn/100;for(let i=0;i<N;i+=4){const k=s*Math.max(0,1-Math.abs(L(d,i)-L(B,i))/28);for(let c=0;c<3;c++)d[i+c]+=(B[i+c]-d[i+c])*k}}
+ if(m.sm){const B=bl(d,Math.max(2,Math.round(Math.max(w,h)/280))),s=m.sm/100*.9;for(let i=0;i<N;i+=4){const k=skin(B[i],B[i+1],B[i+2])*s*Math.max(0,1-Math.abs(L(d,i)-L(B,i))/40);for(let c=0;c<3;c++)d[i+c]+=(B[i+c]-d[i+c])*k}}
+ if(['ex','sd','hl','wm','ti','sk','st','vb','wh'].some(k=>m[k])){const f=2**(m.ex/100),th=255-m.wh*.7;
+  for(let i=0;i<N;i+=4){let r=d[i],g=d[i+1],v=d[i+2];const ln=L(d,i)/255,sk=(m.sk||m.st)?skin(r,g,v):0,add=m.sd*.6*(1-ln)**2-m.hl*.5*ln*ln+m.sk*.22*sk;
+   r=r*f+add+m.wm*.6+m.st*.4*sk;g=g*f+add-m.ti*.5;v=v*f+add-m.wm*.6-m.st*.3*sk;
+   if(m.vb){const l=.3*r+.59*g+.11*v,q=1+m.vb/100*.8*(1-(Math.max(r,g,v)-Math.min(r,g,v))/255);r=l+(r-l)*q;g=l+(g-l)*q;v=l+(v-l)*q}
+   if(m.wh){const k=cp((Math.min(r,g,v)-th)/((255-th)*.4),0,1);r+=(255-r)*k;g+=(255-g)*k;v+=(255-v)*k}
+   d[i]=r;d[i+1]=g;d[i+2]=v}}
+ if(m.sh){const B=bl(d,1),s=m.sh/100*1.3;for(let i=0;i<N;i+=4)for(let c=0;c<3;c++)d[i+c]+=(d[i+c]-B[i+c])*s}
+ const cv=document.createElement('canvas');cv.width=w;cv.height=h;cv.getContext('2d').putImageData(new ImageData(d,w,h),0,0);
+ const t=m.tk=(m.tk||0)+1;
+ cv.toBlob(bo=>{if(t!==m.tk||!S.imgs.includes(m))return;const u=URL.createObjectURL(bo);if(m.src!==m.orig)URL.revokeObjectURL(m.src);m.src=u;list();draw()},'image/jpeg',.95)}
+function geo(){let[pw,ph]=PAGES[S.pw];if(S.o==='l')[pw,ph]=[ph,pw];const ex=(S.gb||0)-Math.max(0,...S.imgs.map(m=>m.bst==='out'?(m.bw||0):0));return{pw,ph,ex,uw:pw-MM('ml')-MM('mr')+2*ex,uh:ph-MM('mt')-MM('mb')+2*ex}}
+function plan(g){const rows=[],warn=[],counts=[],gb=S.gb||0;let row=null;
+ S.imgs.forEach((m,i)=>{const sw=m.w+2*gb,sh=m.h+2*gb;
+  if(sw>g.uw+.01||sh>g.uh+.01)warn.push(`ছবি ${i+1}: সাইজ${gb?' (কাটার বর্ডারসহ)':''} ব্যবহারযোগ্য জায়গার চেয়ে বড়!`);
+  const fc=fitCols(m,g);if(m.cols>fc)warn.push(`ছবি ${i+1}: এক লাইনে ${m.cols}টি ধরছে না, ${fc}টি বসানো হয়েছে।`);
+  const cpr=m.cols>0?Math.min(m.cols,fc):fc;let N=m.copies;
+  if(m.auto){const ln=m.lines||1,rem=(!m.nl&&row&&row.it.length)?Math.floor((g.uw-row.w+.01)/(m.gx+sw)):0;N=rem>0?Math.min(rem,cpr)+(ln-1)*cpr:cpr*ln}
+  counts[i]=N;let cnt=0;
+  for(let c=0;c<N;c++){
+   const over=row&&row.it.length&&row.w+m.gx+sw>g.uw+.01;
+   if(!row||over||(c===0&&m.nl)||(m.cols>0&&cnt>=m.cols)){row={it:[],w:0,h:0};rows.push(row);cnt=0}
+   row.w+=(row.it.length?m.gx:0)+sw;row.h=Math.max(row.h,sh);row.it.push({i,w:sw,h:sh});cnt++}});
+ return{rows,warn:[...new Set(warn)].join(' · '),counts}}
+function layout(g){const{rows,warn,counts}=plan(g);
+ const rGy=r=>S.imgs[r.it[0].i].gy;
+ const pgs=[];let cur=null,hh=0;
+ rows.forEach(r=>{const gyUse=rGy(r);if(!cur||(cur.length&&hh+gyUse+r.h>g.uh+.01)){cur=[];pgs.push(cur);hh=0}hh+=(cur.length?gyUse:0)+r.h;cur.push(r)});
+ if(!pgs.length)pgs.push([]);
+ const pages=pgs.map(rs=>{const sumH=rs.reduce((a,r)=>a+r.h,0),nRows=rs.length,
+   gyJust=S.va==='j'&&nRows>1?(g.uh-sumH)/(nRows-1):null,
+   bh=gyJust!=null?sumH+gyJust*(nRows-1):sumH+rs.slice(1).reduce((a,r)=>a+rGy(r),0),
+   oy=S.va==='c'?(g.uh-bh)/2:0,P=[];let y=MM('mt')-g.ex+Math.max(0,oy);
+  rs.forEach((r,ri)=>{const k=r.it.length,sw=r.it.reduce((a,t)=>a+t.w,0),
+    gxJust=S.ha==='j'&&k>1&&r.it.every(t=>!S.imgs[t.i].gx)&&(g.uw-sw)<Math.min(...r.it.map(t=>t.w))?(g.uw-sw)/(k-1):null,
+    rw=gxJust!=null?sw+(k-1)*gxJust:sw+r.it.slice(1).reduce((a,t)=>a+S.imgs[t.i].gx,0),
+    ox=S.ha==='r'?g.uw-rw:S.ha==='c'?(g.uw-rw)/2:0;let x=MM('ml')-g.ex+Math.max(0,ox);
+   r.it.forEach((t,ti)=>{if(ti)x+=gxJust!=null?gxJust:S.imgs[t.i].gx;P.push({i:t.i,x,y,w:t.w,h:t.h});x+=t.w});
+   y+=r.h+(ri<rs.length-1?(gyJust!=null?gyJust:rGy(rs[ri+1])):0)});return P});
+ return{pages,rows:rows.length,warn,counts}}
+function fitCols(m,g){return Math.max(1,Math.floor((g.uw+m.gx+.01)/(m.w+2*(S.gb||0)+m.gx)))}
+function eff(m,g){if(!m.auto)return m.copies;g=g||geo();const i=S.imgs.indexOf(m);if(i>=0)return plan(g).counts[i];const f=fitCols(m,g);return(m.cols?Math.min(m.cols,f):f)*(m.lines||1)}
+function scale(){return S.vz/100}
+function fitPct(){const c=document.getElementById('canvas'),g=geo();return Math.max(10,Math.min(400,Math.floor((c.clientWidth-60)/(g.pw*K)*100)))}
+function syncZoom(){const z=$('#vzval');if(z)z.textContent=Math.round(S.vz)+'%'}
+function setZoom(v){S.vz=cp(Math.round(v),10,400);const e=$('#vz');if(e)e.value=S.vz;syncZoom();draw()}
+function pageSizeText(){let[pw,ph]=PAGES[S.pw];if(S.o==='l')[pw,ph]=[ph,pw];return `${+pw.toFixed(1)}×${+ph.toFixed(1)} মিমি (${(pw/25.4).toFixed(2)}×${(ph/25.4).toFixed(2)} ইঞ্চি)`}
+function cell(i,l,t){const m=S.imgs[i],g={w:m.w,h:m.h},q=m.rot%180!==0,iw=q?g.h:g.w,ih=q?g.w:g.h,tx=m.x/100*g.w,ty=m.y/100*g.h,msel=S.msel&&S.msel.length>1&&S.msel.includes(i);
+ return `<div class="cell${i===S.sel?' sel':''}${m.shd?' shd':''}${m.lck?' lockd':''}${msel?' msel':''}" data-i="${i}" data-bst="${m.bst||'in'}" style="left:${l}mm;top:${t}mm;width:${g.w}mm;height:${g.h}mm;--bw:${m.bw||0}mm;--bc:${m.bc||'#000000'};--r:${m.rad||0}mm"><img draggable="false" alt="" src="${m.src}" style="width:${iw}mm;height:${ih}mm;object-fit:${m.fit};opacity:${(m.op??100)/100};transform:translate(calc(-50% + ${tx}mm),calc(-50% + ${ty}mm)) rotate(${(m.rot||0)+(m.fr||0)}deg) scale(${m.flip?-m.z:m.z},${m.vflip?-m.z:m.z});filter:brightness(${m.br}%) contrast(${m.ct}%) saturate(${m.sat}%) grayscale(${m.gray?1:0})"></div>`}
+function cutRects(P,g){const E=.01,ov=(a0,a1,b0,b1)=>Math.min(a1,b1)-Math.max(a0,b0)>E;
+ return P.map(a=>{const m=S.imgs[a.i],hx=(m?m.gx:0)/2,hy=(m?m.gy:0)/2;
+  let r=a.x+a.w+hx,l=a.x-hx,b=a.y+a.h+hy,t=a.y-hy,nr=1e9,nl=-1e9,nb=1e9,nt=-1e9;
+  P.forEach(o=>{if(o===a)return;
+   if(ov(a.y,a.y+a.h,o.y,o.y+o.h)){if(o.x>=a.x+a.w-E)nr=Math.min(nr,o.x);if(o.x+o.w<=a.x+E)nl=Math.max(nl,o.x+o.w)}
+   if(ov(a.x,a.x+a.w,o.x,o.x+o.w)){if(o.y>=a.y+a.h-E)nb=Math.min(nb,o.y);if(o.y+o.h<=a.y+E)nt=Math.max(nt,o.y+o.h)}});
+  if(nr<1e9)r=(a.x+a.w+nr)/2;if(nl>-1e9)l=(a.x+nl)/2;if(nb<1e9)b=(a.y+a.h+nb)/2;if(nt>-1e9)t=(a.y+nt)/2;
+  l=Math.max(0,l);t=Math.max(0,t);r=Math.min(g.pw,r);b=Math.min(g.ph,b);
+  return[l,t,r-l,b-t]})}
+function guides(P,g){let l='';const o=S.go,n=S.gl,r2=v=>+v.toFixed(2);
+ if(S.gm==='b'){const H=new Map,V=new Map,k5=v=>Math.round(v*20)/20,add=(M,k,u,w)=>{k=k5(k);if(!M.has(k))M.set(k,[]);M.get(k).push([u,w])},
+   mg=iv=>{iv.sort((p,q)=>p[0]-q[0]);const o=[];iv.forEach(([u,w])=>{const t=o[o.length-1];if(t&&u<=t[1]+.05)t[1]=Math.max(t[1],w);else o.push([u,w])});return o};
+  P.forEach(([x,y,w,h])=>{add(H,y,x,x+w);add(H,y+h,x,x+w);add(V,x,y,y+h);add(V,x+w,y,y+h)});
+  H.forEach((iv,y)=>mg(iv).forEach(([u,w])=>l+=`<path d="M${r2(u)} ${y}H${r2(w)}"/>`));
+  V.forEach((iv,x)=>mg(iv).forEach(([u,w])=>l+=`<path d="M${x} ${r2(u)}V${r2(w)}"/>`))} else if(S.gm==='f'){const xs=new Set,ys=new Set;P.forEach(([x,y,w,h])=>{xs.add(r2(x));xs.add(r2(x+w));ys.add(r2(y));ys.add(r2(y+h))});
+  xs.forEach(x=>l+=`<path d="M${x} 0V${g.ph}"/>`);ys.forEach(y=>l+=`<path d="M0 ${y}H${g.pw}"/>`)}
+ else P.forEach(([x,y,w,h])=>{const nn=Math.max(.5,Math.min(n,w/2-o,h/2-o));[[x,1],[x+w,-1]].forEach(([cx,dx])=>[[y,1],[y+h,-1]].forEach(([cy,dy])=>{l+=`<path d="M${r2(cx+dx*o)} ${r2(cy)}h${r2(dx*nn)}M${r2(cx)} ${r2(cy+dy*o)}v${r2(dy*nn)}"/>`}))});
+ return `<svg class="gd" width="${g.pw}mm" height="${g.ph}mm" viewBox="0 0 ${g.pw} ${g.ph}" style="stroke:${S.gc};clip-path:inset(.2mm)">${l}</svg>`}
+function ruler(g,px){const ppi=px*25.4,pwi=g.pw/25.4,phi=g.ph/25.4,sub=ppi/8>=4?8:ppi/4>=4?4:ppi/2>=4?2:1,ls=ppi>=24?1:ppi>=12?2:5,c1='#8a95a1',c2='#4b5766';
+ const t=(d,p,c)=>`repeating-linear-gradient(to ${d},${c} 0 1px,transparent 1px ${p}px)`,bg=d=>`${t(d,ppi/sub,c1)},${t(d,ppi/2,c1)},${t(d,ppi,c2)}`;
+ const hs=`background-image:${bg('right')};background-size:100% 4px,100% 7px,100% 100%;background-position:0 100%,0 100%,0 100%;background-repeat:no-repeat`,
+ vs=`background-image:${bg('bottom')};background-size:4px 100%,7px 100%,100% 100%;background-position:100% 0,100% 0,100% 0;background-repeat:no-repeat`;
+ let hl='',vl='';for(let i=0;i<=pwi;i+=ls)hl+=`<span style="left:${i*ppi+2}px">${i}</span>`;
+ for(let i=0;i<=phi;i+=ls)vl+=`<span style="top:${i*ppi+2}px">${i}</span>`;
+ const x=k=>S[k]*ppi,hm=`<i style="left:0;width:${x('ml')}px"></i><i style="right:0;width:${x('mr')}px"></i><b class="mh" data-mk="ml" style="left:${x('ml')-4}px" title="বাম মার্জিন — টেনে বদলান"></b><b class="mh" data-mk="mr" style="right:${x('mr')-4}px" title="ডান মার্জিন — টেনে বদলান"></b>`,
+ vm=`<i style="top:0;height:${x('mt')}px"></i><i style="bottom:0;height:${x('mb')}px"></i><b class="mh mhv" data-mk="mt" style="top:${x('mt')-4}px" title="উপরের মার্জিন — টেনে বদলান"></b><b class="mh mhv" data-mk="mb" style="bottom:${x('mb')-4}px" title="নিচের মার্জিন — টেনে বদলান"></b>`;
+ return{h:`<div class="rh" style="width:${g.pw*px}px;${hs}">${hm}${hl}</div>`,v:`<div class="rv" style="height:${g.ph*px}px;${vs}">${vm}${vl}</div>`,
+  dh:`<div class="dh" style="width:${g.pw*px}px"><span>প্রস্থ ${pwi.toFixed(2)}″ · ${+g.pw.toFixed(1)} মিমি</span></div>`,
+  dv:`<div class="dv" style="height:${g.ph*px}px"><span>দৈর্ঘ্য ${phi.toFixed(2)}″ · ${+g.ph.toFixed(1)} মিমি</span></div>`}}
+function draw(){const g=geo(),L=layout(g),GB=S.gb||0,s=scale(),px=K*s,rg=ruler(g,px);let html='';
+ const wm=S.wmt?`<div class="wmk" style="color:${S.wmc};font-size:${S.wms}mm;opacity:${S.wmo/100};transform:translate(-50%,-50%) rotate(${S.wmr}deg)">${S.wmt.replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]))}</div>`:'';
+
+ const mbox=S.mgd?`<div class="marginbox" style="left:${MM('ml')}mm;top:${MM('mt')}mm;width:${g.uw-2*g.ex}mm;height:${g.uh-2*g.ex}mm"></div>`:'';
+ L.pages.forEach(P=>{const n=P.length,cells=n?P.map(c=>cell(c.i,c.x+GB,c.y+GB)).join(''):'<div class="empty">ছবি নেই — এখানে টেনে আনুন, Ctrl+V দিয়ে পেস্ট করুন, অথবা 📂 বাটনে ক্লিক করুন</div>';
+  html+=`<div class="pagewrap${S.ruler?'':' nr'}"><div class="rcorner"></div>${rg.h}${rg.v}<div class="wrap" style="width:${g.pw*px}px;height:${g.ph*px}px"><div class="page" style="width:${g.pw}mm;height:${g.ph}mm;transform:scale(${s});background:${S.pbg}">${S.gm==='n'||!n?'':guides(cutRects(P,g),g)}${cells}${wm}${mbox}</div></div>${rg.dv}${rg.dh}</div>`});
+ $('#pv').innerHTML=html;document.documentElement.style.setProperty('--ph',g.ph+'mm');
+ $('#pgs').textContent=`@page{${S.bl?'':`size:${g.pw}mm ${g.ph}mm;`}margin:0}`;
+ const tot=L.counts.reduce((a,b)=>a+b,0);
+ $('#info').innerHTML=`📄 <b>${S.pw}</b>${S.o==='l'?' (ল্যান্ডস্কেপ)':''} · ${(g.pw/25.4).toFixed(2)}×${(g.ph/25.4).toFixed(2)}″ · মোট <b>${tot}</b> টি ছবি · <b>${L.rows}</b> লাইন · <b>${L.pages.length}</b> পেজ`+(selTargets().length>1?` · <b style="color:#3b5bdb">✅ ${bn2(selTargets().length)}টি ছবি একসাথে এডিট হচ্ছে</b>`:'')+(L.warn?`<br><span class="warn">${L.warn}</span>`:'')}
+function selectImg(i){S.sel=i;S.msel=i>=0?[i]:[];$('#pictab').style.display=i>=0?'':'none';if(i>=0)showTab('picture');list();sync();draw()}
+function clickThumb(i,e){
+ if(e.shiftKey&&S.sel>=0){const a=Math.min(S.sel,i),b=Math.max(S.sel,i);S.msel=[];for(let x=a;x<=b;x++)S.msel.push(x);S.sel=i}
+ else if(e.ctrlKey||e.metaKey){return toggleMsel(i)}
+ else{S.sel=i;S.msel=[i]}
+ $('#pictab').style.display=S.sel>=0?'':'none';
+ if(S.sel>=0&&!(e.ctrlKey||e.metaKey||e.shiftKey))showTab('picture');
+ list();sync();draw()}
+function removeImg(i){const m=S.imgs[i];S.imgs.splice(i,1);S.sel=Math.min(S.sel,S.imgs.length-1);
+ S.msel=S.sel>=0?[S.sel]:[];
+ if(S.sel<0){$('#pictab').style.display='none';if(S.tab==='picture'||S.tab==='edit')showTab('home')}list();sync();draw();pushHist()}
+function add(fs){const n=S.imgs.length;[...fs].forEach(f=>{if(!f.type.startsWith('image/'))return;const u=URL.createObjectURL(f),m={src:u,orig:u,copies:4,...D,...DS};S.imgs.push(m);
+ const im=new Image();im.onload=()=>{const k=Math.min(1,1400/Math.max(im.naturalWidth,im.naturalHeight)),w=Math.round(im.naturalWidth*k),h=Math.round(im.naturalHeight*k),c=document.createElement('canvas');c.width=w;c.height=h;
+  const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,w,h);x.drawImage(im,0,0,w,h);m.base=x.getImageData(0,0,w,h);if(ADV.some(a=>m[a]))proc(m)};im.src=u});
+ if(S.imgs.length>n){selectImg(n);showTab('home');pushHist()}}
+function calHTML(){const[pw,ph]=PAGES.A4,cols=Math.floor((pw-40)/10);let t='';
+ for(let i=0;i<=cols;i++)t+=`<div class="tick" style="left:${20+i*10}mm"></div><div class="tl" style="left:${20+i*10}mm">${i}</div>`;
+ return `<!doctype html><html><head><meta charset="utf-8"><title>ক্যালিব্রেশন</title><style>
+ @page{size:${pw}mm ${ph}mm;margin:0}*{box-sizing:border-box}
+ body{margin:0;width:${pw}mm;height:${ph}mm;font-family:sans-serif;position:relative}
+ .sq{position:absolute;left:20mm;top:20mm;width:100mm;height:100mm;border:.4mm solid #000}
+ .sq b{position:absolute;left:0;top:-6mm;font-size:9pt}
+ .hl{position:absolute;left:20mm;top:135mm;width:${pw-40}mm;height:0;border-top:.3mm solid #000}
+ .tick{position:absolute;top:135mm;width:0;height:4mm;border-left:.3mm solid #000}
+ .tl{position:absolute;top:140mm;font-size:6pt;transform:translateX(-50%)}
+ .txt{position:absolute;left:20mm;top:150mm;width:${pw-40}mm;font-size:10pt;line-height:1.7}
+ 
+</style></head><body>
+ <div class="sq"><b>১০০ × ১০০ মিমি (১০×১০ সেমি)</b></div>${t}<div class="hl"></div>
+ <div class="txt">এই বর্গ ও রুলার-লাইনটি একটি সাধারণ (মেট্রিক) স্কেল বা মাপার ফিতা দিয়ে মেপে দেখুন।<br>
+ ঠিক থাকলে: বর্গটি ১০০×১০০ মিমি এবং রুলার-লাইনের প্রতি ঘর ১ সেমি হবে।<br>
+ না মিললে: প্রিন্ট ডায়ালগে Scale অপশনে <b>Default / 100% / Actual size</b> বাছুন (Fit to page/Shrink to fit বন্ধ রাখুন) এবং Margins <b>None</b> রাখুন, তারপর আবার প্রিন্ট করে মাপুন। একবার ঠিক হলে প্রতিবার এই সেটিং ব্যবহার করবেন।</div>
+ </body></html>`}
+function calibrate(){const w=open('','_blank');if(!w){alert('পপ-আপ ব্লক করা আছে — ব্রাউজারে এই পেজের জন্য পপ-আপ অনুমতি দিন।');return}
+ w.document.open();w.document.write(calHTML());w.document.close();setTimeout(()=>{try{w.focus();w.print()}catch(e){}},350)}
+let HIST=[],HP=-1,restoring=false;
+function snapshot(){return{...S,imgs:S.imgs.map(m=>({...m}))}}
+function restoreSnap(sn){restoring=true;
+ Object.assign(S,sn);S.imgs=sn.imgs.map(m=>({...m}));
+ if(S.sel>=S.imgs.length)S.sel=S.imgs.length-1;
+ S.msel=(S.msel||[]).filter(i=>i>=0&&i<S.imgs.length);if(!S.msel.length&&S.sel>=0)S.msel=[S.sel];
+ $('#pictab').style.display=S.sel>=0?'':'none';
+ S.imgs.forEach(m=>{if(ADV.some(k=>m[k]))proc(m)});
+ list();sync();draw();restoring=false;updateUndoBtns()}
+function pushHist(){if(restoring)return;
+ HIST=HIST.slice(0,HP+1);HIST.push(snapshot());
+ if(HIST.length>60)HIST.shift();else HP++;
+ HP=Math.min(HP,HIST.length-1);updateUndoBtns()}
+function undo(){if(HP<=0)return;HP--;restoreSnap(HIST[HP])}
+function redo(){if(HP>=HIST.length-1)return;HP++;restoreSnap(HIST[HP])}
+function updateUndoBtns(){const u=$('#ubtn'),r=$('#rbtn');if(u)u.disabled=HP<=0;if(r)r.disabled=HP>=HIST.length-1}
+document.addEventListener('input',e=>{const t=e.target;if(t.id==='vz'){S.vz=+t.value;syncZoom();draw()}else if(t.dataset.k)setv(t);else if(t.dataset.cp){const im=S.imgs[+t.dataset.cp];im.copies=Math.max(0,Math.min(200,+t.value||0));im.auto=false;sync();draw()}});
+document.addEventListener('change',e=>{const t=e.target;if(t.dataset.k){setv(t);pushHist()}else if(t.dataset.cp)pushHist()});
+addEventListener('keydown',e=>{if(e.key==='Escape')return;
+ const z=e.key.toLowerCase()==='z',y=e.key.toLowerCase()==='y';
+ if((e.ctrlKey||e.metaKey)&&z){e.preventDefault();return e.shiftKey?redo():undo()}
+ if((e.ctrlKey||e.metaKey)&&y){e.preventDefault();return redo()}
+ if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)&&!/^(INPUT|SELECT|TEXTAREA)$/.test(document.activeElement.tagName)){
+  const tg=selTargets().map(k=>S.imgs[k]).filter(x=>x&&!x.lck);if(!tg.length)return;e.preventDefault();const st=e.shiftKey?5:1;
+  tg.forEach(m=>{if(e.key==='ArrowUp')m.y=cp(m.y-st,-100,100);if(e.key==='ArrowDown')m.y=cp(m.y+st,-100,100);
+  if(e.key==='ArrowLeft')m.x=cp(m.x-st,-100,100);if(e.key==='ArrowRight')m.x=cp(m.x+st,-100,100)});
+  sync();draw();clearTimeout(window.__nk);window.__nk=setTimeout(pushHist,400)}});
+document.addEventListener('click',e=>{const t=e.target,tb=t.closest('[data-tab]');if(tb)return toggleTab(tb.dataset.tab);const mc=t.closest('[data-msc]');if(mc){toggleMsel(+mc.dataset.msc);return}
+ const b=t.closest('button');
+ if(b&&b.dataset.k){setv(b);pushHist();return}
+ if(b&&b.dataset.ori){const tg=selTargets();if(!tg.length)return;tg.forEach(k=>{const im=S.imgs[k];if(!im)return;if((b.dataset.ori==='p')!==(im.h>=im.w))[im.w,im.h]=[im.h,im.w];im.pre=presetOf(im)});sync();draw();list();pushHist();return}
+ if(b&&b.dataset.rm)return removeImg(+b.dataset.rm);
+ if(b&&b.dataset.cpm){const im=S.imgs[+b.dataset.i];if(!im)return;im.copies=cp(eff(im)+(+b.dataset.cpm),0,200);im.auto=false;list();sync();draw();pushHist();return}
+ if(b&&b.dataset.a){const a=b.dataset.a,m=S.imgs[S.sel];
+  if(a==='undo')return undo();
+  if(a==='redo')return redo();
+  if(a==='print')return openPrint();
+  if(a==='addphoto')return $('#fi').click();
+  if(a==='calibrate')return calibrate();
+  if(a==='zoom100'){S.vz=100;const vzEl=$('#vz');if(vzEl)vzEl.value=100;syncZoom();return draw()}
+  if(a==='zoomfit'){S.vz=fitPct();const vzEl=$('#vz');if(vzEl)vzEl.value=S.vz;syncZoom();return draw()}
+  if(a==='ribbontoggle'){panelOpen?closePanel():showTab(S.tab,true);return}
+  if(a==='zoomin')return setZoom(S.vz+10);
+  if(a==='zoomout')return setZoom(S.vz-10);
+  if(a==='mset'){const v=+b.dataset.mv;S.mt=S.mr=S.mb=S.ml=v;S.lock=true;sync();draw();pushHist();return}
+  if(a==='gomargin'){showTab('layout',true);setTimeout(()=>{const el=document.getElementById('marginGrp');if(el)el.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'})},60);return}
+  if(a==='m0'){S.mt=S.mr=S.mb=S.ml=0;sync();draw();pushHist();return}
+  if(a==='new'){if(!confirm('সব ছবি ও সেটিং মুছে নতুন শুরু করবেন?'))return;
+   S.imgs.forEach(x=>{URL.revokeObjectURL(x.src);if(x.orig!==x.src)URL.revokeObjectURL(x.orig)});
+   Object.assign(S,JSON.parse(JSON.stringify(INIT_S)));$('#pictab').style.display='none';showTab('home');list();sync();draw();
+   HIST=[];HP=-1;pushHist();return}
+  if(a==='selall'){S.msel=S.imgs.map((_,i)=>i);if(S.msel.length)S.sel=S.msel[S.msel.length-1];list();sync();draw();return}
+  if(a==='c1'){S.imgs.forEach(im=>{im.copies=1;im.auto=false});list();sync();draw();pushHist();return}
+  if(a==='oneline'){const tg=selTargets().length>1?selTargets():S.imgs.map((_,i)=>i);if(!tg.length)return;const fc=fitCols(S.imgs[tg[0]],geo()),n=tg.length;
+   tg.forEach((k,j)=>{const im=S.imgs[k];im.auto=false;im.nl=false;im.cols=0;im.copies=n>=fc?1:Math.floor(fc/n)+(j<fc%n?1:0)});list();sync();draw();pushHist();return}
+  if(a==='selnone'){S.msel=S.sel>=0?[S.sel]:[];list();sync();draw();return}
+  if(a==='del'){const idxs=selTargets().slice().sort((x,y)=>y-x);if(!idxs.length)return;
+   idxs.forEach(i=>S.imgs.splice(i,1));
+   S.sel=S.imgs.length?cp(Math.min(...idxs),0,S.imgs.length-1):-1;S.msel=S.sel>=0?[S.sel]:[];
+   $('#pictab').style.display=S.sel>=0?'':'none';if(S.sel<0&&(S.tab==='picture'||S.tab==='edit'))showTab('home');
+   list();sync();draw();pushHist();return}
+  if(!m)return;
+  const trg=selTargets().map(i=>S.imgs[i]).filter(Boolean);
+  if(a==='rl')trg.forEach(im=>im.rot=(im.rot+270)%360);
+  if(a==='rr')trg.forEach(im=>im.rot=(im.rot+90)%360);
+  if(a==='reset')trg.forEach(im=>{Object.assign(im,D);proc(im)});
+  if(a==='dup'){const c2={...m};S.imgs.splice(S.sel+1,0,c2);selectImg(S.sel+1);pushHist();return}
+  if(a==='auto')trg.forEach(im=>{if(!im.base)return;let s=0;const q=im.base.data;for(let i=0;i<q.length;i+=16)s+=.3*q[i]+.59*q[i+1]+.11*q[i+2];const Lm=s/(q.length/16);Object.assign(im,{ex:Math.round(cp(Math.log2(125/Lm)*70,-50,50)),sd:20,hl:10,vb:20,sh:25,dn:15});proc(im)});
+  if(a==='skin')trg.forEach(im=>{Object.assign(im,{sm:45,sk:15,st:8,dn:15,sh:20});proc(im)});
+  if(a==='bg')trg.forEach(im=>{im.wh=60;proc(im)});
+  if(a==='warm')trg.forEach(im=>{Object.assign(im,{wm:cp((im.wm||0)+20,-50,50),ti:cp((im.ti||0)-4,-50,50)});proc(im)});
+  if(a==='cool')trg.forEach(im=>{Object.assign(im,{wm:cp((im.wm||0)-20,-50,50),ti:cp((im.ti||0)+4,-50,50)});proc(im)});
+  if(a==='vint')trg.forEach(im=>{im.sat=70;Object.assign(im,{ex:cp((im.ex||0)-5,-100,100),wm:cp((im.wm||0)+15,-50,50),vb:cp((im.vb||0)-10,0,100)});proc(im)});
+  if(a==='fill'){const g=geo();trg.forEach(im=>{im.lines=Math.max(1,Math.floor((g.uh+im.gy)/(im.h+2*(S.gb||0)+im.gy)));im.auto=true});list()}
+  sync();draw();pushHist();return}
+ const th=t.closest('[data-th]');if(th&&!t.closest('input'))return clickThumb(+th.dataset.th,e)});
+const appEl=document.querySelector('.app');
+['dragover','dragenter'].forEach(v=>appEl.addEventListener(v,e=>e.preventDefault()));
+appEl.addEventListener('drop',e=>{e.preventDefault();add(e.dataTransfer.files)});
+$('#fi').onchange=e=>{add(e.target.files);e.target.value=''};
+addEventListener('paste',e=>add(e.clipboardData.files));
+let dr=null;
+$('#pv').addEventListener('pointerdown',e=>{const c=e.target.closest('.cell');if(!c)return;const i=+c.dataset.i,m=S.imgs[i];
+ if(e.ctrlKey||e.metaKey||e.shiftKey){clickThumb(i,e);return}
+ const grp=!!(S.msel&&S.msel.length>1&&S.msel.includes(i));
+ if(grp){if(S.sel!==i){S.sel=i;list();sync();draw()}}else if(S.sel!==i)selectImg(i);
+ if(m.lck)return;
+ const items=(grp?selTargets():[i]).map(k=>S.imgs[k]).filter(o=>o&&!o.lck).map(o=>({m:o,x:o.x,y:o.y}));
+ dr={i,sx:e.clientX,sy:e.clientY,items,group:grp,moved:false};e.preventDefault()});
+addEventListener('pointermove',e=>{if(!dr)return;const f=K*scale(),dx=e.clientX-dr.sx,dy=e.clientY-dr.sy;if(Math.abs(dx)+Math.abs(dy)>3)dr.moved=true;
+ dr.items.forEach(o=>{const m=o.m;let nx=cp(Math.round(o.x+dx/(m.w*f)*100),-100,100),ny=cp(Math.round(o.y+dy/(m.h*f)*100),-100,100);
+  if(Math.abs(nx)<=2)nx=0;if(Math.abs(ny)<=2)ny=0;m.x=nx;m.y=ny});sync();draw()});
+addEventListener('pointerup',()=>{if(!dr)return;const d=dr;dr=null;if(d.group&&!d.moved){selectImg(d.i);return}if(d.moved||!d.group)pushHist()});addEventListener('resize',draw);
+let rd=null,tipEl=null;const MN={ml:'বাম',mr:'ডান',mt:'উপর',mb:'নিচ'},OPP={ml:'mr',mr:'ml',mt:'mb',mb:'mt'};
+function showTip(e,t){if(!tipEl){tipEl=document.createElement('div');tipEl.style.cssText='position:fixed;z-index:999;background:#16232e;color:#fff;font-size:12px;padding:3px 8px;border-radius:6px;pointer-events:none';document.body.appendChild(tipEl)}tipEl.textContent=t;tipEl.style.left=e.clientX+14+'px';tipEl.style.top=e.clientY+14+'px'}
+$('#pv').addEventListener('pointerdown',e=>{const h=e.target.closest('.mh');if(!h)return;const k=h.dataset.mk;rd={k,sx:e.clientX,sy:e.clientY,v:S[k]};e.preventDefault()});
+addEventListener('pointermove',e=>{if(!rd)return;const k=rd.k,hz=k==='ml'||k==='mr',g=geo(),d=(hz?e.clientX-rd.sx:e.clientY-rd.sy)/(96*scale()),sg=(k==='ml'||k==='mt')?1:-1,
+ mx=S.lock?(Math.min(g.pw,g.ph)/25.4-.5)/2:(hz?g.pw:g.ph)/25.4-S[OPP[k]]-.5,v=cp(Math.round((rd.v+sg*d)*100)/100,0,Math.max(0,Math.min(3,mx)));
+ if(S.lock)S.mt=S.mr=S.mb=S.ml=v;else S[k]=v;sync();draw();showTip(e,MN[k]+' মার্জিন: '+v.toFixed(2)+'″')});
+['pointerup','pointercancel'].forEach(ev=>addEventListener(ev,()=>{if(!rd)return;rd=null;pushHist();if(tipEl){tipEl.remove();tipEl=null}}));
+buildRibbon();showTab(S.tab,true);$('#pictab').style.display='none';list();sync();draw();
+HIST=[snapshot()];HP=0;updateUndoBtns();
+
+/* ===== Word-স্টাইল প্রিন্ট ===== */
+const bn=n=>String(n).replace(/\d/g,d=>'০১২৩৪৫৬৭৮৯'[d]);
+const PP={cur:0,fit:true,z:100},MG=[[0,'কোনোটি নয়'],[.12,'সরু'],[.25,'সাধারণ'],[.5,'প্রশস্ত']];
+const ppPages=()=>[...document.querySelectorAll('#pv .page')];
+function ppFill(){const gbE=$('#ppGb');if(gbE&&document.activeElement!==gbE)gbE.value=S.gb||0;$('#ppPap').innerHTML=Object.keys(PAGES).map(k=>`<option value="${k}" ${k===S.pw?'selected':''}>${k} — ${bn(+PAGES[k][0].toFixed(1))}×${bn(+PAGES[k][1].toFixed(1))} মিমি</option>`).join('');
+ $('#ppOri').value=S.o;const eq=S.mt===S.mr&&S.mr===S.mb&&S.mb===S.ml,hit=eq&&MG.find(m=>Math.abs(m[0]-S.mt)<.001);
+ $('#ppMar').innerHTML=MG.map(m=>`<option value="${m[0]}" ${hit&&hit===m?'selected':''}>${m[1]} — চারদিকে ${bn(+(m[0]*25.4).toFixed(1))} মিমি</option>`).join('')+(hit?'':`<option value="c" selected>কাস্টম মার্জিন</option>`)}
+function ppIdx(){const n=ppPages().length,m=$('#ppMode').value;if(m==='all')return{idx:[...Array(n).keys()]};if(m==='cur')return{idx:[PP.cur]};
+ const idx=[];let bad=!$('#ppRange').value.trim();$('#ppRange').value.split(/[,،]/).forEach(p=>{const q=p.trim().match(/^(\d+)(?:\s*-\s*(\d+))?$/);if(!q){if(p.trim())bad=true;return}const a=+q[1],b=q[2]?+q[2]:a;if(a<1||b<a||b>n){bad=true;return}for(let i=a;i<=b;i++)if(!idx.includes(i-1))idx.push(i-1)});
+ return{idx:idx.sort((a,b)=>a-b),bad:bad||!idx.length}}
+function ppList(){const{idx,bad}=ppIdx(),c=Math.max(1,Math.min(99,+$('#ppCopies').value||1)),col=$('#ppCol').value==='1',o=[];
+ if(col){for(let k=0;k<c;k++)idx.forEach(i=>o.push(i))}else idx.forEach(i=>{for(let k=0;k<c;k++)o.push(i)});return{list:o,bad}}
+function ppClone(i){const p=ppPages()[i].cloneNode(true);p.querySelectorAll('.marginbox,.empty'+($('#ppGd').checked?'':',.gd')).forEach(e=>e.remove());p.querySelectorAll('.sel,.msel').forEach(e=>e.classList.remove('sel','msel'));return p}
+function ppRender(){ppTip();const n=ppPages().length,g=geo(),box=$('#ppPrev');PP.cur=Math.max(0,Math.min(n-1,PP.cur));
+ if(PP.fit)PP.z=Math.max(10,Math.min(300,Math.floor(Math.min((box.clientWidth-44)/(g.pw*K),(box.clientHeight-44)/(g.ph*K))*100)));
+ const sc=PP.z/100,p=ppClone(PP.cur),d=document.createElement('div');p.style.transform=`scale(${sc})`;d.className='psheet';d.style.cssText=`width:${g.pw*K*sc}px;height:${g.ph*K*sc}px`;d.appendChild(p);box.replaceChildren(d);
+ $('#ppNum').value=PP.cur+1;$('#ppNum').max=n;$('#ppTot').textContent=bn(n);$('#ppPv').disabled=PP.cur<=0;$('#ppNx').disabled=PP.cur>=n-1;
+ $('#ppZ').value=PP.z;$('#ppZv').textContent=bn(PP.z)+'%';$('#ppRw').style.display=$('#ppMode').value==='rng'?'flex':'none';
+ const{list,bad}=ppList(),s=$('#ppSum');s.className='pphint'+(bad?' bad':'');s.textContent=bad?'পেজ রেঞ্জ ঠিক নেই — যেমন 1-3, 5 লিখুন':`মোট ${bn(list.length)} শিট প্রিন্ট হবে · ${S.pw}${S.o==='l'?' ল্যান্ডস্কেপ':''} · ${ppPTv().label}${ppPrn()?' · '+ppPrn():''}`}
+function ppApply(){sync();draw();pushHist();ppFill();ppRender()}
+function openPrint(){if(!S.imgs.length)return alert('আগে ছবি আপলোড করুন');PP.cur=0;PP.fit=true;$('#ppMode').value='all';$('#ppm').classList.add('on');ppFill();ppRender()}
+function closePrint(){$('#ppm').classList.remove('on')}
+function ppSetup(){closePrint();showTab('layout',true)}
+function ppPrint(mode){const{list,bad}=ppList();if(bad||!list.length)return alert('পেজ রেঞ্জ ঠিক নেই — যেমন 1-3, 5 লিখুন');const g=geo();
+ const t0=document.title;document.title=ppTitle();document.getElementById('pp')?.remove();const h=document.createElement('div');h.id='pp';
+ list.forEach(i=>{const w=document.createElement('div');w.className='pps';w.style.cssText=`width:${g.pw}mm;height:${g.ph-.6}mm`;w.appendChild(ppClone(i));h.appendChild(w)});
+ document.body.appendChild(h);document.body.classList.add('pp-on');
+ const done=()=>{document.title=t0;document.body.classList.remove('pp-on');h.remove();removeEventListener('afterprint',done)};addEventListener('afterprint',done);setTimeout(()=>ppFire(done,mode),80)}
+$('#ppGo').onclick=ppPrint;$('#ppBack').onclick=closePrint;$('#ppSetup').onclick=$('#ppSetup2').onclick=ppSetup;
+$('#ppPap').onchange=e=>{S.pw=e.target.value;ppApply()};$('#ppGb').onchange=e=>{S.gb=cp(+e.target.value||0,0,10);ppApply()};$('#ppOri').onchange=e=>{S.o=e.target.value;ppApply()};
+$('#ppMar').onchange=e=>{if(e.target.value==='c')return;S.mt=S.mr=S.mb=S.ml=+e.target.value;S.lock=true;ppApply()};
+['ppCopies','ppMode','ppRange','ppCol','ppGd'].forEach(i=>$('#'+i).addEventListener('input',ppRender));
+$('#ppPv').onclick=()=>{PP.cur--;ppRender()};$('#ppNx').onclick=()=>{PP.cur++;ppRender()};$('#ppNum').onchange=e=>{PP.cur=(+e.target.value||1)-1;ppRender()};
+$('#ppZ').oninput=e=>{PP.fit=false;PP.z=+e.target.value;ppRender()};$('#ppZi').onclick=()=>{PP.fit=false;PP.z=Math.min(300,PP.z+10);ppRender()};$('#ppZo').onclick=()=>{PP.fit=false;PP.z=Math.max(10,PP.z-10);ppRender()};$('#ppFit').onclick=()=>{PP.fit=true;ppRender()};
+addEventListener('resize',()=>{if($('#ppm').classList.contains('on'))ppRender()});
+addEventListener('keydown',e=>{const on=$('#ppm').classList.contains('on'),typing=/^(INPUT|SELECT|TEXTAREA)$/.test(document.activeElement.tagName);
+ if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='p'){e.preventDefault();e.stopPropagation();on?ppPrint():openPrint();return}
+ if(!on)return;if(e.key==='Escape')closePrint();else if(!typing&&(e.key==='PageDown'||e.key==='ArrowRight')){PP.cur++;ppRender()}else if(!typing&&(e.key==='PageUp'||e.key==='ArrowLeft')){PP.cur--;ppRender()}
+ e.stopPropagation()},true);
+
+/* ===== প্রিন্টার ও কাগজের ধরন ===== */
+const PT=[['plain','সাধারণ কাগজ (Plain Paper)','Standard / Normal'],['bright','ব্রাইট হোয়াইট পেপার','Standard / High'],['glossy','গ্লোসি ফটো পেপার (Glossy)','Photo / Best'],['semi','সেমি-গ্লোসি / লাস্টার ফটো পেপার','Photo / Best'],['satin','সাটিন / সিল্কি ফটো পেপার','Photo / Best'],['matte','ম্যাট ফটো পেপার (Matte)','Photo / High'],['premium','প্রিমিয়াম ফটো পেপার','Photo / Best'],['rc','RC / রেজিন কোটেড ফটো পেপার','Photo / Best'],['inkjet','ইঙ্কজেট কোটেড পেপার','High'],['card','কার্ডস্টক / মোটা কার্ড','High (ম্যানুয়াল ফিড ভালো)'],['sticker','স্টিকার / অ্যাডহেসিভ ফটো পেপার','Photo / High'],['custom','অন্য ধরন (নিজে লিখুন)','আপনার কাগজের প্যাকেটে লেখা সেটিং']];
+const LS={get(k,d){try{const v=localStorage.getItem(k);return v===null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+let PRS=LS.get('pp_printers',[]);
+const esc=t=>String(t).replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+const ppPrn=()=>$('#ppPr').value||'';
+function ppPTv(){const k=$('#ppPT').value,p=PT.find(x=>x[0]===k)||PT[0];return{k,label:k==='custom'?($('#ppPTc').value.trim()||'অন্য ধরন'):p[1].replace(/ \(.*\)/,''),q:p[2]}}
+function ppTitle(){return `পাসপোর্ট ফটো — ${ppPTv().label}${ppPrn()?' — '+ppPrn():''}`}
+function ppTip0(){const t=ppPTv(),pr=ppPrn();$('#ppPTcw').style.display=t.k==='custom'?'flex':'none';
+ $('#ppTip').innerHTML=`<b>ব্রাউজারের প্রিন্ট ডায়ালগে এগুলো দিন:</b><br>প্রিন্টার → <b>${pr?esc(pr):'আপনার প্রিন্টার'}</b><br>কাগজের ধরন (Paper type / Media) → <b>${esc(t.label)}</b><br>কোয়ালিটি → <b>${esc(t.q)}</b><br>Margins → None · Scale → 100% · Headers and footers → বন্ধ · Background graphics → চালু`}
+function ppPrFill(sel){const cur=sel!==undefined?sel:LS.get('pp_printer','');$('#ppPr').replaceChildren(new Option('— প্রিন্টার বেছে নিন —',''),...PRS.map(n=>new Option(n,n,false,n===cur)))}
+$('#ppPr').onchange=e=>{LS.set('pp_printer',e.target.value);ppRender()};
+$('#ppPrAdd').onclick=()=>{const n=(prompt('প্রিন্টারের নাম লিখুন (যেমন: Epson L3250)')||'').trim();if(!n)return;if(!PRS.includes(n))PRS.push(n);LS.set('pp_printers',PRS);LS.set('pp_printer',n);ppPrFill(n);ppRender()};
+$('#ppPrDel').onclick=()=>{const n=ppPrn();if(!n||!confirm(`"${n}" তালিকা থেকে মুছবেন?`))return;PRS=PRS.filter(x=>x!==n);LS.set('pp_printers',PRS);LS.set('pp_printer','');ppPrFill('');ppRender()};
+$('#ppPT').replaceChildren(...PT.map(p=>new Option(p[1],p[0],false,p[0]===LS.get('pp_pt','plain'))));$('#ppPTc').value=LS.get('pp_ptc','');ppPrFill();
+$('#ppPT').onchange=e=>{LS.set('pp_pt',e.target.value);ppRender()};$('#ppPTc').oninput=e=>{LS.set('pp_ptc',e.target.value);ppRender()};
+
+/* ===== যেকোনো একক-এ ছবির সাইজ ===== */
+const UN=[['mm','মিমি (mm)',1,1],['cm','সেন্টিমিটার (cm)',10,2],['in','ইঞ্চি (inch)',25.4,3],['pt','পয়েন্ট (pt)',25.4/72,1],['px','পিক্সেল (৩০০ dpi)',25.4/300,0]];
+let szLock=LS.get('sz_lock',false);
+const szUn=()=>UN.find(u=>u[0]===$('#szU').value)||UN[0];
+const szFmt=mm=>{const u=szUn();return +(mm/u[2]).toFixed(u[3])};
+function szSync(){const m=S.imgs[S.sel],bar=$('#szbar'),foc=document.activeElement;bar.classList.toggle('off',!m);
+ $('#szLk').textContent=szLock?'🔒':'🔓';$('#szLk').classList.toggle('on',szLock);
+ if(!m){$('#szW').value=$('#szH').value='';$('#szName').textContent='— আগে একটি ছবি সিলেক্ট করুন';$('#szInfo').textContent='';return}
+ const n=selTargets().length;$('#szName').textContent=n>1?`(${bn(n)}টি ছবিতে প্রযোজ্য)`:`(ছবি ${bn(S.sel+1)})`;
+ if(foc!==$('#szW'))$('#szW').value=szFmt(m.w);if(foc!==$('#szH'))$('#szH').value=szFmt(m.h);
+ if(foc!==$('#szP'))$('#szP').value=PRE[m.pre]?m.pre:PRE.length-1;
+ $('#szInfo').textContent=`= ${+m.w.toFixed(1)}×${+m.h.toFixed(1)} মিমি · ${(m.w/25.4).toFixed(2)}×${(m.h/25.4).toFixed(2)} ইঞ্চি · ${(m.w/10).toFixed(2)}×${(m.h/10).toFixed(2)} সেমি`}
+function szApply(k){const t=selTargets();if(!t.length)return;const val=+$(k==='w'?'#szW':'#szH').value*szUn()[2];if(!isFinite(val)||val<1||val>5000)return;
+ t.forEach(i=>{const o=S.imgs[i];if(!o)return;const r=o.h/o.w;if(k==='w'){o.w=+val.toFixed(3);if(szLock)o.h=+(val*r).toFixed(3)}else{o.h=+val.toFixed(3);if(szLock)o.w=+(val/r).toFixed(3)}o.pre=PRE.length-1});
+ list();sync();draw()}
+$('#szU').replaceChildren(...UN.map(u=>new Option(u[1],u[0],false,u[0]===LS.get('sz_unit','mm'))));
+(function(){const gs={};PRE.forEach((p,i)=>{(gs[p[3]]=gs[p[3]]||[]).push(new Option(p[0],i))});$('#szP').replaceChildren(...Object.entries(gs).map(([n,o])=>{const g=document.createElement('optgroup');g.label=n;g.append(...o);return g}))})();
+$('#szW').addEventListener('input',()=>szApply('w'));$('#szH').addEventListener('input',()=>szApply('h'));
+['szW','szH'].forEach(id=>$('#'+id).addEventListener('change',()=>{pushHist();szSync()}));
+$('#szU').onchange=e=>{LS.set('sz_unit',e.target.value);szSync()};
+$('#szLk').onclick=()=>{szLock=!szLock;LS.set('sz_lock',szLock);szSync()};
+$('#szSw').onclick=()=>{const t=selTargets();if(!t.length)return;t.forEach(i=>{const o=S.imgs[i];if(o){[o.w,o.h]=[o.h,o.w];o.pre=presetOf(o)}});list();sync();draw();pushHist()};
+function szScale(f){const t=selTargets();if(!t.length)return;t.forEach(i=>{const o=S.imgs[i];if(!o)return;o.w=+Math.max(1,o.w*f).toFixed(3);o.h=+Math.max(1,o.h*f).toFixed(3);o.pre=presetOf(o)});list();sync();draw();pushHist()}
+$('#szDn').onclick=()=>szScale(1/1.05);$('#szUp').onclick=()=>szScale(1.05);
+$('#szP').onchange=e=>{const v=+e.target.value,t=selTargets();if(!PRE[v][1]){$('#szW').focus();$('#szW').select();return}
+ t.forEach(i=>{const o=S.imgs[i];if(o){o.w=PRE[v][1];o.h=PRE[v][2];o.cols=0;o.pre=v}});list();sync();draw();pushHist()};
+window.szReady=true;szSync();
+
+/* ===== ডেস্কটপ সফটওয়্যার মোড ===== */
+const DK=window.desktop||null;
+function toast(t,err){const d=document.createElement('div');d.className='toast'+(err?' err':'');d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),3800)}
+function ppFire(done,mode){if(!DK){window.print();return}const g=geo();
+ const job=mode==='pdf'?DK.savePDF({width:g.pw,height:g.ph,name:ppTitle()}):DK.print({silent:$('#ppSilent').checked,deviceName:ppPrn(),color:$('#ppClr').value==='c',width:g.pw,height:g.ph});
+ job.then(r=>{done();if(r&&r.ok)toast(mode==='pdf'?'✔ PDF সেভ হয়েছে':'✔ প্রিন্ট জব প্রিন্টারে পাঠানো হয়েছে');else if(r&&r.reason&&!/cancel/i.test(r.reason))toast('প্রিন্ট হয়নি: '+r.reason,true)}).catch(e=>{done();toast('সমস্যা: '+e.message,true)})}
+function ppTip(){ppTip0();if(!DK)return;const t=ppPTv();$('#ppTip').innerHTML=`<b>প্রিন্টের আগে মিলিয়ে নিন:</b><br>প্রিন্টার → <b>${esc(ppPrn()||'—')}</b><br>ট্রেতে কাগজ → <b>${esc(t.label)}</b><br>ড্রাইভারে Paper type / কোয়ালিটি → <b>${esc(t.q)}</b><br><span style="opacity:.8">(কাগজের ধরন সফটওয়্যার থেকে প্রিন্টারকে পাঠানো যায় না — প্রিন্টারের ড্রাইভারে একবার সেট করে রাখুন)</span>`}
+if(DK){document.body.classList.add('desktop');
+ const fillPr=async()=>{try{const L=await DK.getPrinters(),cur=LS.get('pp_printer','')||'',def=(L.find(p=>p.isDefault)||L[0]||{}).name||'',sel=L.some(p=>p.name===cur)?cur:def;
+  $('#ppPr').replaceChildren(...(L.length?L.map(p=>new Option(p.displayName+(p.isDefault?' (ডিফল্ট)':''),p.name,false,p.name===sel)):[new Option('কোনো প্রিন্টার পাওয়া যায়নি','')]));
+  LS.set('pp_printer',sel);if($('#ppm').classList.contains('on'))ppRender()}catch(e){toast('প্রিন্টার তালিকা আনা যায়নি',true)}};
+ $('#ppPrRf').onclick=fillPr;$('#ppPdf').onclick=()=>ppPrint('pdf');fillPr()}
+
+/* ===== Word-style add-on ===== */
+(function(){
+const LSK='word_last_custom';let pop=null;
+const closePop=()=>{if(pop){pop.remove();pop=null}};
+document.addEventListener('mousedown',e=>{if(pop&&!pop.contains(e.target)&&!e.target.closest('.wbig'))closePop()});
+function openPop(btn,items){closePop();const r=btn.getBoundingClientRect();pop=document.createElement('div');pop.className='wpop';
+ pop.style.left=r.left+'px';pop.style.top=r.bottom+'px';
+ items.forEach(it=>{if(it==='-'){pop.appendChild(document.createElement('hr'));return}
+  const b=document.createElement('button');if(it.cur)b.className='cur';b.innerHTML='<b>'+it.t+'</b>'+(it.s?'<small>'+it.s+'</small>':'');
+  b.onclick=()=>{closePop();it.f()};pop.appendChild(b)});document.body.appendChild(pop)}
+const big=(ic,t,f)=>{const b=document.createElement('button');b.type='button';b.className='wbig';b.innerHTML='<span>'+ic+'</span>'+t+' ▾';b.onclick=()=>f(b);return b};
+const grpWrap=(name,...els)=>{const g=document.createElement('div');g.className='grp';const b=document.createElement('div');b.className='gbody';els.forEach(e=>b.appendChild(e));g.appendChild(b);g.insertAdjacentHTML('beforeend','<div class="gname">'+name+'</div>');return g};
+const setM=(t,r,b,l)=>{S.mt=t;S.mr=r;S.mb=b;S.ml=l;S.lock=(t==r&&r==b&&b==l);sync();draw();pushHist()};
+function margins(btn){const cur=[S.mt,S.mr,S.mb,S.ml];let last;try{last=JSON.parse(localStorage.getItem(LSK))}catch(e){}
+ const d=(a)=>`Top: ${a[0]}"  Bottom: ${a[2]}"  Left: ${a[3]}"  Right: ${a[1]}"`;
+ const P=[['Normal',[1,1,1,1]],['Narrow',[.5,.5,.5,.5]],['Moderate',[1,.75,1,.75]],['Wide',[1,2,1,2]],['Passport (0.12")',[.12,.12,.12,.12]]];
+ const it=[];if(last)it.push({t:'Last Custom Setting',s:d(last),f:()=>setM(last[0],last[1],last[2],last[3])},'-');
+ P.forEach(([n,a])=>it.push({t:n,s:d(a),cur:cur.every((v,i)=>+v===a[i]),f:()=>setM(...a)}));
+ it.push('-',{t:'Custom Margins…',f:()=>{try{localStorage.setItem(LSK,JSON.stringify(cur))}catch(e){}document.querySelector('[data-a=gomargin]').click()}});openPop(btn,it)}
+function psize(btn){const it=Object.keys(PAGES).map(k=>{const[w,h]=PAGES[k];return{t:k,s:(w/25.4).toFixed(2)+'" x '+(h/25.4).toFixed(2)+'"',cur:S.pw===k,f:()=>{S.pw=k;sync();draw();pushHist()}}});openPop(btn,it)}
+function pics(btn){openPop(btn,[{t:'This Device…',f:()=>$('#fi').click()}])}
+function orient(btn){openPop(btn,[{t:'Portrait',cur:S.o==='p',f:()=>{S.o='p';sync();draw();pushHist()}},{t:'Landscape',cur:S.o==='l',f:()=>{S.o='l';sync();draw();pushHist()}}])}
+function dlg(){const m=S.imgs[S.sel];if(!m){alert('আগে একটি ছবি সিলেক্ট করুন');return}
+ const im=new Image();im.onload=()=>show(im.naturalWidth/300*25.4,im.naturalHeight/300*25.4);im.onerror=()=>show(m.w,m.h);im.src=m.src;
+ function show(ow,oh){const I=25.4,w0=m.w,h0=m.h;let lock=false;const o=document.createElement('div');o.className='wdlg';
+  o.innerHTML=`<div><h4>Layout <span style="cursor:pointer" id="dx">✕</span></h4><div class="bd"><b>Size</b>
+  <fieldset><legend>Height / Width (inches)</legend><div class="r"><label>Height</label><input type="number" id="dh" step="0.01" min="0.05"></div><div class="r"><label>Width</label><input type="number" id="dw" step="0.01" min="0.05"></div></fieldset>
+  <fieldset><legend>Scale</legend><div class="r"><label>Height</label><input type="number" id="sh" step="1"> %<label style="width:auto;margin-left:10px">Width</label><input type="number" id="sw" step="1"> %</div>
+  <div class="r"><label style="width:auto"><input type="checkbox" id="lk"> Lock aspect ratio</label></div></fieldset>
+  <fieldset><legend>Original size</legend>Height: ${(oh/I).toFixed(2)}"&nbsp;&nbsp; Width: ${(ow/I).toFixed(2)}"</fieldset><div style="text-align:right"><button id="rs" style="padding:3px 14px">Reset</button></div></div>
+  <div class="ft"><button class="ok" id="ok">OK</button><button id="cn">Cancel</button></div></div>`;document.body.appendChild(o);
+  const q=x=>o.querySelector('#'+x);let h=h0,w=w0;const put=()=>{q('dh').value=(h/I).toFixed(2);q('dw').value=(w/I).toFixed(2);q('sh').value=Math.round(h/oh*100);q('sw').value=Math.round(w/ow*100)};put();
+  const ar=w0/h0;q('dh').oninput=e=>{h=+e.target.value*I;if(lock)w=h*ar;put2('dh')};q('dw').oninput=e=>{w=+e.target.value*I;if(lock)h=w/ar;put2('dw')};
+  q('sh').oninput=e=>{h=+e.target.value/100*oh;if(lock)w=h*ar;put2('sh')};q('sw').oninput=e=>{w=+e.target.value/100*ow;if(lock)h=w/ar;put2('sw')};
+  function put2(skip){const v={dh:(h/I).toFixed(2),dw:(w/I).toFixed(2),sh:Math.round(h/oh*100),sw:Math.round(w/ow*100)};for(const k in v)if(k!==skip)q(k).value=v[k]}
+  q('lk').onchange=e=>lock=e.target.checked;q('rs').onclick=()=>{w=ow;h=oh;put()};
+  const cl=()=>o.remove();q('dx').onclick=q('cn').onclick=cl;
+  q('ok').onclick=()=>{if(w>0&&h>0){const t=(typeof selTargets==='function'?selTargets():[S.sel]);t.forEach(i=>{const x=S.imgs[i];if(x){x.w=+w.toFixed(2);x.h=+h.toFixed(2);x.pre=PRE.length-1}});list();sync();draw();pushHist();if(typeof szSync==='function')szSync()}cl()}}}
+const _br=buildRibbon;buildRibbon=function(){_br.apply(this,arguments);
+ const L=document.querySelector('[data-panel="layout"]');if(L)L.prepend(grpWrap('Page Setup',big('▭','Margins',margins),big('📄','Size',psize),big('⟳','Orientation',orient)));
+ const N=document.querySelector('[data-panel="insert"]');if(N)N.prepend(grpWrap('Illustrations',big('🖼️','Pictures',pics)));
+ const P=document.querySelector('[data-panel="picture"]');if(P){const b=document.createElement('button');b.type='button';b.className='wbig';b.innerHTML='<span>↘</span>Layout / Size…';b.onclick=dlg;P.prepend(grpWrap('Size',b))}};
+buildRibbon();showTab(S.tab,true);$('#pictab').style.display=S.sel>=0?'':'none';sync();
+})();
+
+(function(){const hide=()=>{const L=document.querySelector('[data-panel="layout"]');if(!L)return;
+ [...L.querySelectorAll('.grp')].forEach(g=>{const n=(g.querySelector('.gname')||{}).textContent||'';if(/^পেজ সেটাপ/.test(n)||/বর্ডারলেস/.test(n))g.style.display='none'})};
+ const _b=buildRibbon;buildRibbon=function(){_b.apply(this,arguments);hide()};hide()})();
+$('#panels').addEventListener('wheel',e=>{const p=document.querySelector('#panels .tabpanel.on');if(p&&p.scrollWidth>p.clientWidth&&Math.abs(e.deltaY)>Math.abs(e.deltaX)){p.scrollLeft+=e.deltaY;e.preventDefault()}},{passive:false});
+</script></body></html>
