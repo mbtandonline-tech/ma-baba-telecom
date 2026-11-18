@@ -174,9 +174,15 @@ function Studio() {
     if (needsTwo && !second) { toast.error("জোড়া ছবির জন্য দ্বিতীয় ছবি যোগ করুন"); return; }
     setBusy(true);
     try {
-      const images = [toUploadDataUrl(origImg ?? img)];
-      if (needsTwo && second) images.push(toUploadDataUrl(await loadImage(second)));
-      const r = await ai({ data: { images, prompt } });
+      const src = origImg ?? img;
+      // Workers AI requires input images < 512x512
+      const images = [toUploadDataUrl(src, 500)];
+      if (needsTwo && second) images.push(toUploadDataUrl(await loadImage(second), 500));
+      // output aspect matches the source photo, longest side 1024
+      const k = 1024 / Math.max(src.naturalWidth, src.naturalHeight);
+      const width = Math.max(256, Math.min(1920, Math.round(src.naturalWidth * k)));
+      const height = Math.max(256, Math.min(1920, Math.round(src.naturalHeight * k)));
+      const r = await ai({ data: { images, prompt, width, height } });
       if (r.error || !r.image) throw new Error(r.error);
       apply({ src: r.image, frame: DEFAULT_FRAME });
       toast.success("AI ছবি তৈরি হয়েছে!");
