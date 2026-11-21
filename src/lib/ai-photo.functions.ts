@@ -38,10 +38,10 @@ function base64ToBlob(b64: string, mime = "image/jpeg"): Blob {
 }
 
 export const aiEditPhoto = createServerFn({ method: "POST" })
-  .inputValidator((d) => Input.parse(d))
+  .validator((d) => Input.parse(d))
   .handler(async ({ data }): Promise<{ image?: string; error?: string }> => {
-    const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
-    const aiToken = process.env.CLOUDFLARE_AI_TOKEN;
+    const accountId = process.env["CLOUDFLARE_ACCOUNT_ID"];
+    const aiToken = process.env["CLOUDFLARE_AI_TOKEN"];
     if (!accountId || !aiToken) {
       return { error: "Cloudflare AI সিক্রেট সার্ভারে সেট করা নেই। CLOUDFLARE_ACCOUNT_ID ও CLOUDFLARE_AI_TOKEN যোগ করুন।" };
     }
