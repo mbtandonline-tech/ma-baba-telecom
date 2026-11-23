@@ -6,12 +6,25 @@ const Input = z.object({
   prompt: z.string().min(5).max(4000),
   width: z.number().int().min(256).max(1920).optional(),
   height: z.number().int().min(256).max(1920).optional(),
+  model: z.enum(["fast", "hq"]).optional(),
+  guidance: z.number().min(1).max(10).optional(),
 });
 
-// Free AI photo editing via Cloudflare Workers AI (FLUX.2 [klein] 4B) — direct REST call.
+// Free AI photo editing via Cloudflare Workers AI (FLUX.2 [klein]) — direct REST call.
 // CLOUDFLARE_ACCOUNT_ID + CLOUDFLARE_AI_TOKEN are server-only secrets.
-// Free tier: 10,000 neurons/day; this model is "Zero data retention" (photos are not stored).
-const MODEL = "@cf/black-forest-labs/flux-2-klein-4b";
+// Free tier: 10,000 neurons/day. "fast" (4B) ≈ 26 neurons/output tile (~40-60 edits/day),
+// "hq" (9B) ≈ 1364 neurons per first megapixel (~7 edits/day). Both are zero data retention.
+const MODELS = {
+  fast: "@cf/black-forest-labs/flux-2-klein-4b",
+  hq: "@cf/black-forest-labs/flux-2-klein-9b",
+} as const;
+
+// Inference tuning per model. Higher steps/guidance follow the prompt more closely,
+// which keeps identity and the flat background intact (pricing is per megapixel, not per step).
+const MODEL_TUNING = {
+  fast: { steps: 20, guidance: 3.5 },
+  hq: { steps: 28, guidance: 4 },
+} as const;
 
 const MODEL_INPUT_MAX = 500; // Workers AI requires input images < 512x512
 
@@ -45,17 +58,22 @@ export const aiEditPhoto = createServerFn({ method: "POST" })
     if (!accountId || !aiToken) {
       return { error: "Cloudflare AI সিক্রেট সার্ভারে সেট করা নেই। CLOUDFLARE_ACCOUNT_ID ও CLOUDFLARE_AI_TOKEN যোগ করুন।" };
     }
+    const modelKey = data.model ?? "hq";
+    const model = MODELS[modelKey];
+    const tuning = MODEL_TUNING[modelKey];
     const form = new FormData();
     form.append("prompt", data.prompt);
     form.append("width", String(data.width ?? 1024));
     form.append("height", String(data.height ?? 1024));
+    form.append("steps", String(tuning.steps));
+    form.append("guidance", String(data.guidance ?? tuning.guidance));
     for (const [i, url] of data.images.entries()) {
       const b64 = url.split(",")[1] ?? "";
       form.append(`input_image_${i}`, base64ToBlob(b64));
     }
     try {
       const res = await fetch(
-        `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/${MODEL}`,
+        `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/${model}`,
         {
           method: "POST",
           headers: { authorization: `Bearer ${aiToken}` },

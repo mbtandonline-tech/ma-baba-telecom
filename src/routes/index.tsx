@@ -101,6 +101,7 @@ function Studio() {
 
   const [promptId, setPromptId] = useState("blue");
   const [promptText, setPromptText] = useState(AI_PROMPTS[0]!.prompt);
+  const [aiModel, setAiModel] = useState<"fast" | "hq">("hq");
   const [busy, setBusy] = useState(false);
   const ai = useServerFn(aiEditPhoto);
 
@@ -182,7 +183,7 @@ function Studio() {
       const k = 1024 / Math.max(src.naturalWidth, src.naturalHeight);
       const width = Math.max(256, Math.min(1920, Math.round(src.naturalWidth * k)));
       const height = Math.max(256, Math.min(1920, Math.round(src.naturalHeight * k)));
-      const r = await ai({ data: { images, prompt, width, height } });
+      const r = await ai({ data: { images, prompt, width, height, model: aiModel } });
       if (r.error || !r.image) throw new Error(r.error);
       apply({ src: r.image, frame: DEFAULT_FRAME });
       toast.success("AI ছবি তৈরি হয়েছে!");
@@ -296,7 +297,7 @@ function Studio() {
               variant="outline"
               className="w-full border-primary/50 text-primary"
               disabled={busy || !img}
-              onClick={() => runAi(blueBgPrompt(s.bg.replace("#", "")).replace("1.5x1.9 inch", `${size.w}x${size.h} mm`))}
+              onClick={() => runAi(blueBgPrompt(s.bg.replace("#", ""), size))}
             >
               {busy ? <Loader2 className="animate-spin" /> : <Wand2 />} AI দিয়ে ব্যাকগ্রাউন্ড বদলান
             </Button>
@@ -345,6 +346,18 @@ function Studio() {
               ))}
             </div>
             <Textarea value={promptText} onChange={(e) => setPromptText(e.target.value)} rows={4} className="text-xs" />
+            <div className="flex items-center gap-1 rounded-lg border p-1">
+              {([["fast", "দ্রুত", "FLUX 4B · ~৪০-৬০টি/দিন"], ["hq", "উন্নত", "FLUX 9B · ~৭টি/দিন"]] as const).map(([k, t, h]) => (
+                <button
+                  key={k}
+                  onClick={() => setAiModel(k)}
+                  className={`flex-1 rounded-md px-2 py-1.5 text-left transition-colors ${aiModel === k ? "bg-primary/15 ring-1 ring-primary" : "hover:bg-accent"}`}
+                >
+                  <div className="text-xs font-semibold">{t}</div>
+                  <div className="text-[10px] text-muted-foreground">{h}</div>
+                </button>
+              ))}
+            </div>
             {AI_PROMPTS.find((p) => p.id === promptId)?.needsTwo && (
               <div className="flex items-center gap-2 rounded-lg border border-dashed p-2">
                 {second ? (

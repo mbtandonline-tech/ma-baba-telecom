@@ -27,24 +27,46 @@ export const PAPERS: Paper[] = [
 
 export type AiPrompt = { id: string; title: string; hint: string; prompt: string; needsTwo?: boolean };
 
-export const blueBgPrompt = (hex = "00C4FC") =>
-  `Please transform the provided image into a professional 1.5x1.9 inch passport-size photo with a plain ${hex}  background. Ensure the subject's face is facing directly forward, with any turns to the side corrected. Remove any blemishes or spots from the face while maintaining a natural appearance. The overall style should be suitable for official passport use.`;
+const sizeLine = (size?: { w: number; h: number }) =>
+  size ? ` Output size: ${size.w}×${size.h} mm at 300 DPI (portrait aspect ratio).` : "";
+
+/**
+ * Passport-style background edit prompt.
+ * Written for FLUX.2 editing models: identity preservation and "no beautification"
+ * are stated explicitly, otherwise distilled models tend to over-smooth faces.
+ */
+export const blueBgPrompt = (hex = "00C4FC", size?: { w: number; h: number }) =>
+  `Edit this photo into a professional passport photograph.
+
+Keep the person's identity exactly: same face, facial features, skin tone, hair, expression and natural skin texture. Do not beautify, smooth, reshape or alter the face.
+
+Replace only the background with a flat, evenly lit solid #${hex} background — no gradient, texture or cast shadow on the wall.
+
+Compose a head-and-shoulders portrait: head centered and upright, eyes level and looking straight into the camera, neutral expression, both ears visible.
+
+Soft, even frontal studio lighting, realistic natural skin tones, true-to-life colour, sharp focus on the eyes, clean natural edges around the hair.${sizeLine(size)}`;
 
 export const AI_PROMPTS: AiPrompt[] = [
   { id: "blue", title: "নীল ব্যাকগ্রাউন্ড", hint: "পাসপোর্ট ছবি, #00C4FC", prompt: blueBgPrompt() },
   {
     id: "white",
     title: "সাদা ব্যাকগ্রাউন্ড",
-    hint: "পাসপোর্ট ছবি, সাদা",
-    prompt:
-      "Please transform the provided image into a professional 1.5x1.9 inch passport-size photo with a plain white background. Ensure the subject's face is facing directly forward, with any turns to the side corrected. Remove any blemishes or spots from the face while maintaining a natural appearance. The overall style should be suitable for official passport use.",
+    hint: "পাসপোর্ট / ভিসা ছবি, সাদা",
+    prompt: blueBgPrompt("FFFFFF"),
   },
   {
     id: "enhance",
-    title: "কোয়ালিটি বৃদ্ধি (8K)",
+    title: "কোয়ালিটি বৃদ্ধি",
     hint: "কিছু না বদলে শুধু পরিষ্কার",
     prompt:
-      "Enhance the uploaded photo to an ultra-realistic 8K quality without changing any object, structure, shape, color, or composition. Do not add, remove, or alter anything in the scene. Only improve clarity, sharpness, edges, textures, and overall resolution. Repair blur, noise, pixel damage, and compression artifacts while keeping every element exactly the same. Maintain the original lighting, shadows, reflections, angle, and framing. Produce a clean, crisp, high-detail HD output that looks natural and lifelike. This prompt must work for any low-quality zoomed or blurry image.",
+      "Restore and sharpen this photo without changing anything. Keep the same person, face, pose, expression, background, colours and framing exactly. Recover fine detail and resolution, reduce noise and compression artifacts, and improve edge clarity. Keep skin texture natural and realistic — do not retouch, beautify, smooth or reshape the face. Output a clean, high-resolution version that looks like a professional camera photograph.",
+  },
+  {
+    id: "suit",
+    title: "ফরমাল পোশাক",
+    hint: "স্যুট পরিয়ে পাসপোর্ট ছবি",
+    prompt:
+      "Edit this photo into a professional passport photograph. Keep the person's face, identity, facial features, skin tone, hair and natural skin texture exactly the same — do not beautify, smooth, reshape or alter the face. Dress the person in a well-fitted formal dark navy suit jacket with a crisp white shirt and a simple dark tie. Replace the background with a flat, evenly lit solid #FFFFFF background. Head-and-shoulders portrait, head centered, eyes level and looking straight into the camera, neutral expression. Soft, even studio lighting, realistic skin tones, sharp focus on the eyes.",
   },
   {
     id: "couple",
@@ -52,7 +74,7 @@ export const AI_PROMPTS: AiPrompt[] = [
     hint: "স্বামী ও স্ত্রী — ২টি ছবি দিন",
     needsTwo: true,
     prompt:
-      "Face 100% Match A highly realistic studio portrait of a South Asian married couple standing side by side against a smooth solid blue background. The man is on the left, looking straight at the camera with a neutral expression.\n\nThe woman is on the right, looking straight at the camera with a neutral expression.\n\nBoth subjects are front-facing with symmetrical framing, maintaining equal spacing, captured in a professional passport-style composition. Soft diffused studio lighting evenly illuminates both faces, eliminating harsh shadows and ensuring balanced brightness and contrast. Skin appears naturally smooth with subtle retouching, blemish removal, and realistic texture preserved.\n\nUltra sharp focus, natural skin tones, clean and noise-free image, high dynamic range, shadow removal, ultra HD, 8K resolution, professional photography, DSLR quality, highly detailed, color accurate.",
+      "Create a professional passport-style photograph of the two people from the reference images, standing side by side.\n\nKeep both identities exactly: same faces, facial features, skin tones, hair and natural skin texture. Do not beautify, smooth, reshape or alter either face.\n\nBoth face the camera, heads upright and level, neutral expressions, shoulders squared. Place them shoulder to shoulder with equal spacing and equal size, heads at the same height.\n\nReplace the background with a flat, evenly lit solid #00C4FC background. Soft, even studio lighting, realistic natural skin tones, sharp focus on the eyes. Output a landscape photo with both subjects fully in frame.",
   },
 ];
 
