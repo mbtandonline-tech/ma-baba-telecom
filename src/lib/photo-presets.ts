@@ -28,23 +28,25 @@ export const PAPERS: Paper[] = [
 export type AiPrompt = { id: string; title: string; hint: string; prompt: string; needsTwo?: boolean };
 
 const sizeLine = (size?: { w: number; h: number }) =>
-  size ? ` Output size: ${size.w}×${size.h} mm at 300 DPI (portrait aspect ratio).` : "";
+  size ? `\n\nFrame it for a ${size.w}×${size.h} mm passport photo.` : "";
+
+const RETOUCH = `Apply light, professional studio retouching only: even out the skin tone, soften temporary blemishes and harsh shadows, lighten under-eye shadows, brighten and sharpen the eyes, and tidy flyaway hair. Preserve permanent features such as freckles, moles and birthmarks, and keep the skin texture and pores crisp and visible — do not over-smooth, airbrush or plasticise the skin.`;
 
 /**
  * Passport-style background edit prompt.
- * Written for FLUX.2 editing models: identity preservation and "no beautification"
- * are stated explicitly, otherwise distilled models tend to over-smooth faces.
+ * Tuned for FLUX.2 editing models: asks for flattering but natural studio
+ * retouching (not "beautified") and explicit identity preservation.
  */
 export const blueBgPrompt = (hex = "00C4FC", size?: { w: number; h: number }) =>
-  `Edit this photo into a professional passport photograph.
+  `Create a professional studio passport photograph from this photo. Keep the person's identity exactly — same face shape, facial features, skin tone, hair and expression, clearly the same person.
 
-Keep the person's identity exactly: same face, facial features, skin tone, hair, expression and natural skin texture. Do not beautify, smooth, reshape or alter the face.
+${RETOUCH}
 
-Replace only the background with a flat, evenly lit solid #${hex} background — no gradient, texture or cast shadow on the wall.
+Replace the background with a flat, evenly lit solid #${hex} background — no gradient, texture or cast shadow on the wall.
 
-Compose a head-and-shoulders portrait: head centered and upright, eyes level and looking straight into the camera, neutral expression, both ears visible.
+Compose a head-and-shoulders portrait: head centred and upright, eyes level looking straight into the camera, calm friendly neutral expression, both ears visible, shoulders squared.
 
-Soft, even frontal studio lighting, realistic natural skin tones, true-to-life colour, sharp focus on the eyes, clean natural edges around the hair.${sizeLine(size)}`;
+Soft, flattering frontal studio lighting, realistic natural colour, sharp focus on the eyes, clean natural edges around the hair.${sizeLine(size)}`;
 
 export const AI_PROMPTS: AiPrompt[] = [
   { id: "blue", title: "নীল ব্যাকগ্রাউন্ড", hint: "পাসপোর্ট ছবি, #00C4FC", prompt: blueBgPrompt() },
@@ -59,14 +61,14 @@ export const AI_PROMPTS: AiPrompt[] = [
     title: "কোয়ালিটি বৃদ্ধি",
     hint: "কিছু না বদলে শুধু পরিষ্কার",
     prompt:
-      "Restore and sharpen this photo without changing anything. Keep the same person, face, pose, expression, background, colours and framing exactly. Recover fine detail and resolution, reduce noise and compression artifacts, and improve edge clarity. Keep skin texture natural and realistic — do not retouch, beautify, smooth or reshape the face. Output a clean, high-resolution version that looks like a professional camera photograph.",
+      `Restore and enhance this photo without changing the person or scene. Keep the same face, pose, expression, background, colours and framing exactly. Recover fine detail and resolution, reduce noise and compression artifacts, improve edge clarity and balance the lighting. ${RETOUCH} Do not reshape the face or change the identity. Output a clean, sharp, high-resolution professional photograph.`,
   },
   {
     id: "suit",
     title: "ফরমাল পোশাক",
     hint: "স্যুট পরিয়ে পাসপোর্ট ছবি",
     prompt:
-      "Edit this photo into a professional passport photograph. Keep the person's face, identity, facial features, skin tone, hair and natural skin texture exactly the same — do not beautify, smooth, reshape or alter the face. Dress the person in a well-fitted formal dark navy suit jacket with a crisp white shirt and a simple dark tie. Replace the background with a flat, evenly lit solid #FFFFFF background. Head-and-shoulders portrait, head centered, eyes level and looking straight into the camera, neutral expression. Soft, even studio lighting, realistic skin tones, sharp focus on the eyes.",
+      `Create a professional studio passport photograph from this photo. Keep the person's identity exactly — same face shape, facial features, skin tone, hair and expression. ${RETOUCH} Dress the person in a well-fitted formal dark navy suit jacket with a crisp white shirt and a simple dark tie. Replace the background with a flat, evenly lit solid #FFFFFF background. Head-and-shoulders portrait: head centred, eyes level looking straight into the camera, calm friendly neutral expression, shoulders squared. Soft, flattering frontal studio lighting, realistic natural colour, sharp focus on the eyes.`,
   },
   {
     id: "couple",
@@ -74,7 +76,7 @@ export const AI_PROMPTS: AiPrompt[] = [
     hint: "স্বামী ও স্ত্রী — ২টি ছবি দিন",
     needsTwo: true,
     prompt:
-      "Create a professional passport-style photograph of the two people from the reference images, standing side by side.\n\nKeep both identities exactly: same faces, facial features, skin tones, hair and natural skin texture. Do not beautify, smooth, reshape or alter either face.\n\nBoth face the camera, heads upright and level, neutral expressions, shoulders squared. Place them shoulder to shoulder with equal spacing and equal size, heads at the same height.\n\nReplace the background with a flat, evenly lit solid #00C4FC background. Soft, even studio lighting, realistic natural skin tones, sharp focus on the eyes. Output a landscape photo with both subjects fully in frame.",
+      `Create a professional studio photograph of the two people from the reference images, standing side by side.\n\nKeep both identities exactly — same faces, facial features, skin tones, hair and expressions. ${RETOUCH}\n\nBoth face the camera, heads upright and level, calm friendly neutral expressions, shoulders squared. Place them shoulder to shoulder with equal spacing and equal size, heads at the same height.\n\nReplace the background with a flat, evenly lit solid #00C4FC background. Soft, flattering studio lighting, realistic natural colour, sharp focus on the eyes. Output a landscape photo with both subjects fully in frame.`,
   },
 ];
 

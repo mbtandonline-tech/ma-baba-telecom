@@ -179,10 +179,20 @@ function Studio() {
       // Workers AI requires input images < 512x512
       const images = [toUploadDataUrl(src, 500)];
       if (needsTwo && second) images.push(toUploadDataUrl(await loadImage(second), 500));
-      // output aspect matches the source photo, longest side 1024
-      const k = 1024 / Math.max(src.naturalWidth, src.naturalHeight);
-      const width = Math.max(256, Math.min(1920, Math.round(src.naturalWidth * k)));
-      const height = Math.max(256, Math.min(1920, Math.round(src.naturalHeight * k)));
+      // Match the output aspect to the final print size so the model composes the
+      // head-and-shoulders framing correctly and the later crop does not cut the face.
+      // Couple photos keep the source aspect so both people stay in frame.
+      let width: number;
+      let height: number;
+      if (needsTwo) {
+        const k = 1024 / Math.max(src.naturalWidth, src.naturalHeight);
+        width = Math.max(256, Math.min(1920, Math.round(src.naturalWidth * k)));
+        height = Math.max(256, Math.min(1920, Math.round(src.naturalHeight * k)));
+      } else {
+        const ar = size.w / size.h;
+        width = ar >= 1 ? 1024 : Math.max(256, Math.round(1024 * ar));
+        height = ar >= 1 ? Math.max(256, Math.round(1024 / ar)) : 1024;
+      }
       const r = await ai({ data: { images, prompt, width, height, model: aiModel } });
       if (r.error || !r.image) throw new Error(r.error);
       apply({ src: r.image, frame: DEFAULT_FRAME });
