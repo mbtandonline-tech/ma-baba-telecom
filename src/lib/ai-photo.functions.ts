@@ -82,7 +82,10 @@ export const aiEditPhoto = createServerFn({ method: "POST" })
       );
       if (!res.ok) {
         if (res.status === 429) {
-          return { error: "আজকের ফ্রি AI কোটা শেষ। ০০:০০ UTC-তে কোটা রিসেট হবে, তারপর আবার চেষ্টা করুন।" };
+          return {
+            error:
+              "আজকের ফ্রি AI কোটা (১০,০০০ neurons) শেষ। প্রতিদিন ০০:০০ UTC-তে রিসেট হয়। বেশি ছবির জন্য Cloudflare Workers Paid ($5/মাস) নিন — ৯B মডেলে প্রতি ছবি প্রায় $০.০১৭, কার্যত আনলিমিটেড।",
+          };
         }
         if (res.status === 401 || res.status === 403) {
           return { error: "CLOUDFLARE_AI_TOKEN অবৈধ বা মেয়াদোত্তীর্ণ। Cloudflare Dashboard-এ token পরীক্ষা করুন।" };
