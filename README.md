@@ -7,7 +7,7 @@
 - **React 19** + **TanStack Start / TanStack Router** (SSR)
 - **TypeScript**, **Vite 8**, **Tailwind CSS 4**
 - **Nitro** — `cloudflare-module` প্রিসেটে Cloudflare Workers-এ ডিপ্লয়
-- **Cloudflare Workers AI** (`@cf/black-forest-labs/flux-2-klein-4b`) — AI ছবি এডিটিং (ফ্রি দৈনিক কোটা, zero data retention)
+- **Cloudflare Workers AI** (FLUX.2 — `flux-2-klein-9b` ডিফল্ট, `flux-2-klein-4b` দ্রুত) — AI ছবি এডিটিং (ফ্রি দৈনিক কোটা, zero data retention)
 - MediaPipe (face landmarks + segmentation), Web Worker-ভিত্তিক রিটাচ পাইপলাইন
 
 ## লোকাল ডেভেলপমেন্ট
@@ -40,6 +40,7 @@ npm run build    # .output/server (Worker) + .output/public (static)
 ## প্রধান ফিচার
 
 - AI ব্যাকগ্রাউন্ড পরিবর্তন (নীল/সাদা/কাস্টম রং) — Workers AI
-- AI প্রম্পট স্টুডিও, প্রিন্ট প্রিভিউ (স্যান্ডবক্সড iframe)
+- AI প্রম্পট স্টুডিও — দুটি কোয়ালিটি মোড: **উন্নত** (FLUX 9B, ~৭টি/দিন) ও **দ্রুত** (FLUX 4B, ~৪০-৬০টি/দিন); প্রম্পটে identity-preserving ও beautification-মুক্ত নির্দেশনা
+- প্রিন্ট প্রিভিউ (স্যান্ডবক্সড iframe) — স্বাধীন লেআউট কাস্টমাইজেশন
 - Pro Editor (Curve, Levels, Heal, Crop) ও Skin Retouch (মাস্ক-ভিত্তিক)
 - একাধিক ছবি, Undo/Redo, Compare, ৩০০ DPI প্রিন্ট লেআউট
