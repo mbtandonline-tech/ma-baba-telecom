@@ -16,7 +16,7 @@
 ```bash
 npm install
 npm run dev      # http://localhost:8080
-npm test         # vitest (৬৩টি টেস্ট)
+npm test         # vitest (৭৪টি টেস্ট)
 npm run build    # .output/server (Worker) + .output/public (static)
 ```
 
@@ -44,7 +44,8 @@ Gemini-র ইমেজ API-তে ফ্রি টিয়ার নেই। 
 ## প্রধান ফিচার
 
 - AI ব্যাকগ্রাউন্ড পরিবর্তন (নীল/সাদা/কাস্টম রং) — Workers AI
-- AI প্রম্পট স্টুডিও — দুটি ইঞ্জিন: **ফ্রি** (Cloudflare FLUX) ও **Gemini** (Nano Banana 2.1, পেইড, সেরা মান)। ফ্রি ইঞ্জিনে দুটি কোয়ালিটি মোড: **উন্নত** (FLUX 9B, ~৭টি/দিন) ও **দ্রুত** (FLUX 4B, ~৪০-৬০টি/দিন); Gemini-তে **উন্নত** = 2K, **দ্রুত** = 1K। প্রম্পটে identity-preserving ও beautification-মুক্ত নির্দেশনা
+- AI প্রম্পট স্টুডিও — দুটি ইঞ্জিন: **ফ্রি** (Cloudflare FLUX) ও **Gemini** (Nano Banana 2.1, পেইড, সেরা মান)। ফ্রি ইঞ্জিনে **সেরা (অটো)** মোড ডিফল্ট: দৈনিক কোটা থাকা পর্যন্ত FLUX 9B, শেষ হলে নিজে থেকেই 4B-তে নেমে যায়; সাথে আজ কতটি বাকি তার কাউন্টার। Gemini-তে **উন্নত** = 2K, **দ্রুত** = 1K। প্রম্পটে identity-preserving ও beautification-মুক্ত নির্দেশনা
+- **ছবি কপি / প্রম্পট কপি** — Gemini বা ChatGPT-এর ফ্রি ওয়েব অ্যাপে এক পেস্টে ছবি ও প্রম্পট দেওয়ার সহজ পথ (ওদের ইমেজ API-তে ফ্রি টিয়ার নেই, তাই web app-ই একমাত্র ফ্রি উপায়)
 - প্রিন্ট প্রিভিউ (স্যান্ডবক্সড iframe) — স্বাধীন লেআউট কাস্টমাইজেশন
 - Pro Editor (Curve, Levels, Heal, Crop) ও Skin Retouch (মাস্ক-ভিত্তিক)
 - একাধিক ছবি, Undo/Redo, Compare, ৩০০ DPI প্রিন্ট লেআউট

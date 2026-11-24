@@ -21,6 +21,7 @@ import { PrintPreview } from "@/components/print-preview/print-preview";
 import { ProEditor } from "@/components/pro-editor/pro-editor";
 import { SkinEditor } from "@/components/pro-editor/skin-editor";
 import { AI_PROMPTS, BG_COLORS, PAPERS, PHOTO_SIZES, THEMES, blueBgPrompt } from "@/lib/photo-presets";
+import { addUsage, emptyUsage, readUsage, remainingImages, resolveAutoModel, writeUsage, type AiUsage } from "@/lib/ai-quota";
 import {
   DEFAULT_ADJUST, DEFAULT_FRAME, layoutSheet, loadImage, mmToPx, renderPhoto, renderSheet, toUploadDataUrl,
   type Adjust, type Frame,
@@ -101,8 +102,13 @@ function Studio() {
 
   const [promptId, setPromptId] = useState("blue");
   const [promptText, setPromptText] = useState(AI_PROMPTS[0]!.prompt);
-  const [aiModel, setAiModel] = useState<"fast" | "hq">("hq");
+  const [aiModel, setAiModel] = useState<"auto" | "fast" | "hq">("auto");
   const [aiProvider, setAiProvider] = useState<"free" | "gemini">("free");
+  // Daily free-quota estimate for this browser (see lib/ai-quota.ts).
+  const [usage, setUsage] = useState<AiUsage>(() => emptyUsage());
+  useEffect(() => { setUsage(readUsage()); }, []);
+  const quotaLeft = remainingImages(usage);
+  const shownModel = aiProvider === "gemini" && aiModel === "auto" ? "hq" : aiModel;
   const [busy, setBusy] = useState(false);
   const ai = useServerFn(aiEditPhoto);
 
@@ -195,14 +201,43 @@ function Studio() {
         width = ar >= 1 ? 1024 : Math.max(256, Math.round(1024 * ar));
         height = ar >= 1 ? Math.max(256, Math.round(1024 / ar)) : 1024;
       }
-      const r = await ai({ data: { images, prompt, width, height, model: aiModel, provider: aiProvider } });
+      // Free engine: "auto" spends the daily quota on the 9B model first, then 4B.
+      // Gemini always needs an explicit 1K/2K choice (auto falls back to 1K).
+      const usedModel: "fast" | "hq" =
+        aiProvider === "gemini" ? (aiModel === "hq" ? "hq" : "fast") : aiModel === "auto" ? resolveAutoModel(readUsage()) : aiModel;
+      const r = await ai({ data: { images, prompt, width, height, model: usedModel, provider: aiProvider } });
       if (r.error || !r.image) throw new Error(r.error);
       apply({ src: r.image, frame: DEFAULT_FRAME });
+      if (aiProvider === "free") {
+        // Count only successful free edits; Gemini is billed, not quota-limited.
+        const next = addUsage(readUsage(), usedModel);
+        writeUsage(next);
+        setUsage(next);
+      }
       toast.success("AI ছবি তৈরি হয়েছে!");
     } catch (e) {
       toast.error((e as Error).message || "AI ব্যর্থ হয়েছে");
     } finally {
       setBusy(false);
+    }
+  };
+
+  // Manual path: Gemini/ChatGPT web apps have no free image API, so make handing
+  // the photo and prompt over to them as short as possible.
+  const copyImage = async () => {
+    if (!img) { toast.error("আগে একটি ছবি খুলুন"); return; }
+    try {
+      const c = document.createElement("canvas");
+      c.width = img.naturalWidth;
+      c.height = img.naturalHeight;
+      c.getContext("2d")!.drawImage(img, 0, 0);
+      const blob = await new Promise<Blob | null>((res) => c.toBlob(res, "image/png"));
+      if (!blob || typeof ClipboardItem === "undefined") throw new Error("clipboard image unsupported");
+      await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+      toast.success("ছবি কপি হয়েছে — Gemini/ChatGPT-এ Ctrl+V করুন");
+    } catch {
+      download(img.src, "passport-photo.png");
+      toast.info("কপি করা যায়নি, ছবিটি ডাউনলোড হয়েছে");
     }
   };
 
@@ -366,22 +401,28 @@ function Studio() {
                 </button>
               ))}
             </div>
-            {aiProvider === "gemini" && <p className="text-[11px] text-muted-foreground">Gemini চালাতে সার্ভারে GEMINI_API_KEY সিক্রেট লাগবে (Google AI Studio key, বিলিং চালু)। প্রতি ছবি ≈ $০.০৩৪ (1K) / $০.০৫ (2K)।</p>}
-            <div className="flex items-center gap-1 rounded-lg border p-1">
+            {aiProvider === "gemini" && <p className="text-[11px] text-muted-foreground">Gemini-র ইমেজ মডেলে ফ্রি টিয়ার নেই — Google-এ বিলিং চালু থাকলে চলবে (~$০.০৩৪/১K, $০.০৫/২K)। বিলিং ছাড়া Google কোটা এরর দেয়; তখন ফ্রি ইঞ্জিন বা নিচের কপি-পেস্ট পথ ব্যবহার করুন।</p>}
+            <div className="grid grid-cols-3 gap-1 rounded-lg border p-1">
               {(aiProvider === "gemini"
-                ? ([["fast", "দ্রুত", "Gemini 1K · ~$০.০৩৪/ছবি"], ["hq", "উন্নত", "Gemini 2K · ~$০.০৫/ছবি"]] as const)
-                : ([["fast", "দ্রুত", "FLUX 4B · ~৪০-৬০টি/দিন"], ["hq", "উন্নত", "FLUX 9B · ~৭টি/দিন"]] as const)
+                ? ([["fast", "দ্রুত", "Gemini 1K · ~$০.০৩৪"], ["hq", "উন্নত", "Gemini 2K · ~$০.০৫"]] as const)
+                : ([["auto", "সেরা (অটো)", "৯B আগে, শেষে ৪B"], ["hq", "৯B", "সেরা মান · ~৭টি/দিন"], ["fast", "৪B", "দ্রুত · ~৮০টি/দিন"]] as const)
               ).map(([k, t, h]) => (
                 <button
                   key={k}
                   onClick={() => setAiModel(k)}
-                  className={`flex-1 rounded-md px-2 py-1.5 text-left transition-colors ${aiModel === k ? "bg-primary/15 ring-1 ring-primary" : "hover:bg-accent"}`}
+                  className={`rounded-md px-2 py-1.5 text-left transition-colors ${shownModel === k ? "bg-primary/15 ring-1 ring-primary" : "hover:bg-accent"}`}
                 >
                   <div className="text-xs font-semibold">{t}</div>
                   <div className="text-[10px] text-muted-foreground">{h}</div>
                 </button>
               ))}
             </div>
+            {aiProvider === "free" && (
+              <div className="rounded-lg border border-dashed px-2 py-1.5 text-[11px] text-muted-foreground">
+                আজ ফ্রি বাকি ≈ <b className="text-foreground">{quotaLeft.hq}</b> টি ৯B বা ≈ <b className="text-foreground">{quotaLeft.fast}</b> টি ৪B
+                <div className="text-[10px]">এই ব্রাউজারের হিসাব · মোট কোটা সবার সাথে ভাগ করা · রাত ১২টা UTC-তে রিসেট</div>
+              </div>
+            )}
             {AI_PROMPTS.find((p) => p.id === promptId)?.needsTwo && (
               <div className="flex items-center gap-2 rounded-lg border border-dashed p-2">
                 {second ? (
@@ -398,12 +439,13 @@ function Studio() {
             <Button className="w-full" disabled={busy || !img} onClick={() => runAi(promptText, AI_PROMPTS.find((p) => p.id === promptId)?.needsTwo)}>
               {busy ? <><Loader2 className="animate-spin" /> তৈরি হচ্ছে…</> : <><Sparkles /> AI দিয়ে ছবি তৈরি করুন</>}
             </Button>
-            <div className="grid grid-cols-3 gap-1.5">
-              <Button size="sm" variant="secondary" onClick={() => { navigator.clipboard.writeText(promptText); toast.success("প্রম্পট কপি হয়েছে"); }}><Copy /> কপি</Button>
+            <div className="grid grid-cols-2 gap-1.5">
+              <Button size="sm" variant="secondary" onClick={copyImage} disabled={!img}><Copy /> ছবি কপি</Button>
+              <Button size="sm" variant="secondary" onClick={() => { navigator.clipboard.writeText(promptText); toast.success("প্রম্পট কপি হয়েছে"); }}><Copy /> প্রম্পট কপি</Button>
               <Button size="sm" variant="secondary" asChild><a href="https://gemini.google.com/app" target="_blank" rel="noreferrer"><ExternalLink /> Gemini</a></Button>
               <Button size="sm" variant="secondary" asChild><a href="https://chatgpt.com/" target="_blank" rel="noreferrer"><ExternalLink /> ChatGPT</a></Button>
             </div>
-            <p className="text-[11px] text-muted-foreground">ফ্রি উপায়: প্রম্পট কপি করে Gemini/ChatGPT-এ ছবিসহ দিন, তৈরি ছবি ডাউনলোড করে “Open Photo” দিয়ে খুলুন।</p>
+            <p className="text-[11px] text-muted-foreground">সবচেয়ে ভালো মান ফ্রিতে: <b>ছবি কপি</b> → Gemini/ChatGPT খুলে <b>Ctrl+V</b> → <b>প্রম্পট কপি</b> করে পেস্ট করুন → তৈরি ছবি ডাউনলোড করে “Open Photo” দিয়ে খুলুন।</p>
           </Panel>
 
           <Panel title="Enhance" color="var(--panel-enhance)">
