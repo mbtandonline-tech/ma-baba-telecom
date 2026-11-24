@@ -8,6 +8,7 @@
 - **TypeScript**, **Vite 8**, **Tailwind CSS 4**
 - **Nitro** — `cloudflare-module` প্রিসেটে Cloudflare Workers-এ ডিপ্লয়
 - **Cloudflare Workers AI** (FLUX.2 — `flux-2-klein-9b` ডিফল্ট, `flux-2-klein-4b` দ্রুত) — AI ছবি এডিটিং (ফ্রি দৈনিক কোটা, zero data retention)
+- **Google Gemini** (`gemini-nano-banana-2.1` / Nano Banana 2.1) — ঐচ্ছিক প্রিমিয়াম ইঞ্জিন, সেরা identity preservation (পেইড API)
 - MediaPipe (face landmarks + segmentation), Web Worker-ভিত্তিক রিটাচ পাইপলাইন
 
 ## লোকাল ডেভেলপমেন্ট
@@ -15,7 +16,7 @@
 ```bash
 npm install
 npm run dev      # http://localhost:8080
-npm test         # vitest (৫৪টি টেস্ট)
+npm test         # vitest (৬৩টি টেস্ট)
 npm run build    # .output/server (Worker) + .output/public (static)
 ```
 
@@ -29,10 +30,13 @@ npm run build    # .output/server (Worker) + .output/public (static)
 
 ## সার্ভার সিক্রেট (Cloudflare Dashboard → Workers → Settings)
 
-| নাম | বিবরণ |
-|---|---|
-| `CLOUDFLARE_ACCOUNT_ID` | Cloudflare account ID (Workers AI REST কলের জন্য) |
-| `CLOUDFLARE_AI_TOKEN` | Workers AI permission-সহ API token (`cfut_...`) |
+| নাম                     | বিবরণ                                                                                        |
+| ----------------------- | -------------------------------------------------------------------------------------------- |
+| `CLOUDFLARE_ACCOUNT_ID` | Cloudflare account ID (Workers AI REST কলের জন্য)                                             |
+| `CLOUDFLARE_AI_TOKEN`   | Workers AI permission-সহ API token (`cfut_...`)                                              |
+| `GEMINI_API_KEY`        | ঐচ্ছিক — Google AI Studio key (বিলিং চালু থাকতে হবে)। UI-তে “Gemini” ইঞ্জিন বাছাই করলে ব্যবহৃত হয় |
+
+Gemini-র ইমেজ API-তে ফ্রি টিয়ার নেই। ১টি ছবি ≈ **$০.০৩৪ (1K)** / **$০.০৫ (2K)**; key না থাকলে অ্যাপ ফ্রি Cloudflare ইঞ্জিনেই চলে।
 
 সিক্রেটগুলো শুধু সার্ভারে `process.env` থেকে পড়া হয়; ক্লায়েন্ট বান্ডলে যায় না।
 নতুন build তৈরি হলে সিক্রেট স্বয়ংক্রিয়ভাবে অন্তর্ভুক্ত হয়।
@@ -40,7 +44,7 @@ npm run build    # .output/server (Worker) + .output/public (static)
 ## প্রধান ফিচার
 
 - AI ব্যাকগ্রাউন্ড পরিবর্তন (নীল/সাদা/কাস্টম রং) — Workers AI
-- AI প্রম্পট স্টুডিও — দুটি কোয়ালিটি মোড: **উন্নত** (FLUX 9B, ~৭টি/দিন) ও **দ্রুত** (FLUX 4B, ~৪০-৬০টি/দিন); প্রম্পটে identity-preserving ও beautification-মুক্ত নির্দেশনা
+- AI প্রম্পট স্টুডিও — দুটি ইঞ্জিন: **ফ্রি** (Cloudflare FLUX) ও **Gemini** (Nano Banana 2.1, পেইড, সেরা মান)। ফ্রি ইঞ্জিনে দুটি কোয়ালিটি মোড: **উন্নত** (FLUX 9B, ~৭টি/দিন) ও **দ্রুত** (FLUX 4B, ~৪০-৬০টি/দিন); Gemini-তে **উন্নত** = 2K, **দ্রুত** = 1K। প্রম্পটে identity-preserving ও beautification-মুক্ত নির্দেশনা
 - প্রিন্ট প্রিভিউ (স্যান্ডবক্সড iframe) — স্বাধীন লেআউট কাস্টমাইজেশন
 - Pro Editor (Curve, Levels, Heal, Crop) ও Skin Retouch (মাস্ক-ভিত্তিক)
 - একাধিক ছবি, Undo/Redo, Compare, ৩০০ DPI প্রিন্ট লেআউট

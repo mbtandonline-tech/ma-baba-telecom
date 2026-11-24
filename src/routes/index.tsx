@@ -102,6 +102,7 @@ function Studio() {
   const [promptId, setPromptId] = useState("blue");
   const [promptText, setPromptText] = useState(AI_PROMPTS[0]!.prompt);
   const [aiModel, setAiModel] = useState<"fast" | "hq">("hq");
+  const [aiProvider, setAiProvider] = useState<"free" | "gemini">("free");
   const [busy, setBusy] = useState(false);
   const ai = useServerFn(aiEditPhoto);
 
@@ -176,9 +177,10 @@ function Studio() {
     setBusy(true);
     try {
       const src = origImg ?? img;
-      // Workers AI requires input images < 512x512
-      const images = [toUploadDataUrl(src, 500)];
-      if (needsTwo && second) images.push(toUploadDataUrl(await loadImage(second), 500));
+      // Workers AI needs input images < 512x512; Gemini keeps more detail at 1024.
+      const maxInput = aiProvider === "gemini" ? 1024 : 500;
+      const images = [toUploadDataUrl(src, maxInput)];
+      if (needsTwo && second) images.push(toUploadDataUrl(await loadImage(second), maxInput));
       // Match the output aspect to the final print size so the model composes the
       // head-and-shoulders framing correctly and the later crop does not cut the face.
       // Couple photos keep the source aspect so both people stay in frame.
@@ -193,7 +195,7 @@ function Studio() {
         width = ar >= 1 ? 1024 : Math.max(256, Math.round(1024 * ar));
         height = ar >= 1 ? Math.max(256, Math.round(1024 / ar)) : 1024;
       }
-      const r = await ai({ data: { images, prompt, width, height, model: aiModel } });
+      const r = await ai({ data: { images, prompt, width, height, model: aiModel, provider: aiProvider } });
       if (r.error || !r.image) throw new Error(r.error);
       apply({ src: r.image, frame: DEFAULT_FRAME });
       toast.success("AI ছবি তৈরি হয়েছে!");
@@ -356,8 +358,20 @@ function Studio() {
               ))}
             </div>
             <Textarea value={promptText} onChange={(e) => setPromptText(e.target.value)} rows={4} className="text-xs" />
+            <div className="grid grid-cols-2 gap-1 rounded-lg border p-1">
+              {([["free", "ফ্রি ইঞ্জিন", "Cloudflare · দৈনিক ফ্রি কোটা"], ["gemini", "Gemini", "সেরা মান · ~৳৪-৬/ছবি"]] as const).map(([k, t, h]) => (
+                <button key={k} onClick={() => setAiProvider(k)} className={`rounded-md px-2 py-1.5 text-left transition-colors ${aiProvider === k ? "bg-primary/15 ring-1 ring-primary" : "hover:bg-accent"}`}>
+                  <div className="text-xs font-semibold">{t}</div>
+                  <div className="text-[10px] text-muted-foreground">{h}</div>
+                </button>
+              ))}
+            </div>
+            {aiProvider === "gemini" && <p className="text-[11px] text-muted-foreground">Gemini চালাতে সার্ভারে GEMINI_API_KEY সিক্রেট লাগবে (Google AI Studio key, বিলিং চালু)। প্রতি ছবি ≈ $০.০৩৪ (1K) / $০.০৫ (2K)।</p>}
             <div className="flex items-center gap-1 rounded-lg border p-1">
-              {([["fast", "দ্রুত", "FLUX 4B · ~৪০-৬০টি/দিন"], ["hq", "উন্নত", "FLUX 9B · ~৭টি/দিন"]] as const).map(([k, t, h]) => (
+              {(aiProvider === "gemini"
+                ? ([["fast", "দ্রুত", "Gemini 1K · ~$০.০৩৪/ছবি"], ["hq", "উন্নত", "Gemini 2K · ~$০.০৫/ছবি"]] as const)
+                : ([["fast", "দ্রুত", "FLUX 4B · ~৪০-৬০টি/দিন"], ["hq", "উন্নত", "FLUX 9B · ~৭টি/দিন"]] as const)
+              ).map(([k, t, h]) => (
                 <button
                   key={k}
                   onClick={() => setAiModel(k)}
