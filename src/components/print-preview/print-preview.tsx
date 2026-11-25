@@ -6,9 +6,20 @@ import bridge from "./photo-bridge.js?raw";
 
 const documentHtml = toolHtml.replace("</script></body>", `</script><script>${bridge}</script></body>`);
 
-export function PrintPreview({ state, photo, onStateChange }: {
+export type PrintLayoutPreset = {
+  paper: string;
+  w: number;
+  h: number;
+  copies: number;
+  cols: number;
+  gap: number;
+  center: boolean;
+};
+
+export function PrintPreview({ state, photo, layout, onStateChange }: {
   state: "closed" | "open" | "minimized";
   photo: { id: string; photo: string } | null;
+  layout: PrintLayoutPreset;
   onStateChange: (state: "closed" | "open" | "minimized") => void;
 }) {
   const frame = useRef<HTMLIFrameElement>(null);
@@ -35,6 +46,10 @@ export function PrintPreview({ state, photo, onStateChange }: {
     if (!ready || !photo) return;
     frame.current?.contentWindow?.postMessage({ type: "easy-optic:photo", photo: photo.photo, id: photo.id }, "*");
   }, [ready, photo]);
+  useEffect(() => {
+    if (!ready) return;
+    frame.current?.contentWindow?.postMessage({ type: "easy-optic:layout", layout }, "*");
+  }, [ready, layout]);
   useEffect(() => {
     if (state !== "open") return;
     const previous = document.activeElement;

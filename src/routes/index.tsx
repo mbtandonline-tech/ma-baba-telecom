@@ -75,6 +75,9 @@ function download(url: string, name: string) {
   a.click();
 }
 
+const printLayoutFor = (paperId: string) =>
+  ({ a4: "A4", a5: "A5", letter: "Letter", "4r": "4×6 ইঞ্চি", "5r": "5×7 ইঞ্চি" } as Record<string, string>)[paperId] ?? "A4";
+
 function Studio() {
   const [s, setS] = useState<Snap>(INIT);
   const committed = useRef<Snap>(INIT);
@@ -98,6 +101,8 @@ function Studio() {
   const [orient, setOrient] = useState<"auto" | "portrait" | "landscape">("auto");
   const [border, setBorder] = useState(0);
   const [cutLines, setCutLines] = useState(true);
+  // Center the whole photo block on the sheet (Epson L8050: 4/8 copies in the middle).
+  const [center, setCenter] = useState(true);
   const [label, setLabel] = useState({ name: "", date: "" });
 
   const [promptId, setPromptId] = useState("blue");
@@ -264,6 +269,11 @@ function Studio() {
     }
   };
 
+  const printLayout = useMemo(
+    () => ({ paper: printLayoutFor(paperId), w: size.w, h: size.h, copies: Math.max(1, count), cols: useCols, gap: 2, center }),
+    [paperId, size.w, size.h, count, useCols, center],
+  );
+
   const photoCanvas = useCallback(
     (dpi = 300) =>
       img
@@ -278,13 +288,13 @@ function Studio() {
   const [sheetUrl, setSheetUrl] = useState<string>("");
   useEffect(() => {
     const t = setTimeout(() => {
-      const c = renderSheet(photoCanvas(90), layout, size.w, size.h, count, useCols, 90, 5, 2, cutLines);
+      const c = renderSheet(photoCanvas(90), layout, size.w, size.h, count, useCols, 90, 5, 2, cutLines, center);
       setSheetUrl(c.toDataURL("image/jpeg", 0.85));
     }, 120);
     return () => clearTimeout(t);
-  }, [photoCanvas, layout, size.w, size.h, count, useCols, cutLines]);
+  }, [photoCanvas, layout, size.w, size.h, count, useCols, cutLines, center]);
 
-  const fullSheet = () => renderSheet(photoCanvas(300), layout, size.w, size.h, count, useCols, 300, 5, 2, cutLines);
+  const fullSheet = () => renderSheet(photoCanvas(300), layout, size.w, size.h, count, useCols, 300, 5, 2, cutLines, center);
 
   const [printPhoto, setPrintPhoto] = useState<{ id: string; photo: string } | null>(null);
   const addedPhotos = useRef(new Set<string>());
@@ -559,6 +569,21 @@ function Studio() {
               <Stepper label="COPIES" value={count} onChange={(v) => { setFill(false); setCopies(Math.max(1, v)); }} />
               <Stepper label="COLUMNS" value={useCols} onChange={(v) => { setFill(false); setCols(Math.max(1, Math.min(layout.cols, v))); }} />
             </div>
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                size="sm"
+                variant={!fill && copies === 4 && useCols === 1 ? "default" : "secondary"}
+                onClick={() => { setFill(false); setCopies(4); setCols(1); setCenter(true); }}
+              >৪ কপি · এক কলাম</Button>
+              <Button
+                size="sm"
+                variant={!fill && copies === 8 && useCols === 2 ? "default" : "secondary"}
+                onClick={() => { setFill(false); setCopies(8); setCols(2); setCenter(true); }}
+              >৮ কপি · ২ কলাম</Button>
+            </div>
+            <label className="flex items-center gap-2 text-sm font-medium">
+              <Checkbox checked={center} onCheckedChange={(v) => setCenter(!!v)} /> কাগজের মাঝ বরাবর
+            </label>
             <div className="checker flex min-h-[300px] flex-1 items-center justify-center rounded-lg p-3">
               {sheetUrl && (
                 <img
@@ -619,7 +644,7 @@ function Studio() {
         </aside>
       </div>
 
-      <PrintPreview state={printPreview} photo={printPhoto} onStateChange={setPrintPreview} />
+      <PrintPreview state={printPreview} photo={printPhoto} layout={printLayout} onStateChange={setPrintPreview} />
       {skinOpen && s.src && (
         <SkinEditor src={s.src} onClose={() => setSkinOpen(false)} onApply={(url) => {
           apply({ src: url }); setSkinOpen(false); toast.success("স্কিন রিটাচ মেইন ছবিতে বসেছে");

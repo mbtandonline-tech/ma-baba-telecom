@@ -139,6 +139,39 @@ export function renderPhoto(
   return c;
 }
 
+/** Positions (px) of `count` photos in a grid, optionally centered on the sheet. */
+export function sheetPlacements(
+  count: number,
+  cols: number,
+  rows: number,
+  photoW: number,
+  photoH: number,
+  gap: number,
+  pageW: number,
+  pageH: number,
+  margin: number,
+  center = false,
+): Array<{ x: number; y: number; w: number; h: number }> {
+  const fitCols = Math.max(1, Math.floor((pageW - 2 * margin + gap) / (photoW + gap)));
+  const useCols = Math.max(1, Math.min(cols, fitCols));
+  const n = Math.max(0, Math.min(count, useCols * Math.max(0, rows)));
+  const usedRows = n ? Math.ceil(n / useCols) : 0;
+  const totalW = useCols * photoW + (useCols - 1) * gap;
+  const totalH = usedRows * photoH + Math.max(0, usedRows - 1) * gap;
+  const x0 = center ? Math.max(margin, (pageW - totalW) / 2) : margin;
+  const y0 = center ? Math.max(margin, (pageH - totalH) / 2) : margin;
+  const out: Array<{ x: number; y: number; w: number; h: number }> = [];
+  for (let i = 0; i < n; i++) {
+    out.push({
+      x: x0 + (i % useCols) * (photoW + gap),
+      y: y0 + Math.floor(i / useCols) * (photoH + gap),
+      w: photoW,
+      h: photoH,
+    });
+  }
+  return out;
+}
+
 /** Compose a print sheet at 300 DPI. */
 export function renderSheet(
   photo: HTMLCanvasElement | null,
@@ -151,6 +184,7 @@ export function renderSheet(
   margin = 5,
   gap = 2,
   cutLines = true,
+  center = false,
 ): HTMLCanvasElement {
   const c = document.createElement("canvas");
   c.width = mmToPx(layout.paperW, dpi);
@@ -161,16 +195,14 @@ export function renderSheet(
   if (!photo) return c;
   const pw = mmToPx(photoW, dpi), ph = mmToPx(photoH, dpi);
   const m = mmToPx(margin, dpi), g = mmToPx(gap, dpi);
-  const useCols = Math.max(1, Math.min(cols, layout.cols));
-  const n = Math.min(count, useCols * layout.rows);
-  for (let i = 0; i < n; i++) {
-    const x = m + (i % useCols) * (pw + g);
-    const y = m + Math.floor(i / useCols) * (ph + g);
-    ctx.drawImage(photo, x, y, pw, ph);
+  const spots = sheetPlacements(count, cols, layout.rows, pw, ph, g, c.width, c.height, m, center);
+  for (const spot of spots) {
+    const { x, y, w, h } = spot;
+    ctx.drawImage(photo, x, y, w, h);
     if (cutLines) {
       ctx.strokeStyle = "rgba(0,0,0,0.25)";
       ctx.lineWidth = 1;
-      ctx.strokeRect(x - 0.5, y - 0.5, pw + 1, ph + 1);
+      ctx.strokeRect(x - 0.5, y - 0.5, w + 1, h + 1);
     }
   }
   return c;
