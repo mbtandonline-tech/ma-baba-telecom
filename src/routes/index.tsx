@@ -584,6 +584,9 @@ function Studio() {
             <label className="flex items-center gap-2 text-sm font-medium">
               <Checkbox checked={center} onCheckedChange={(v) => setCenter(!!v)} /> কাগজের মাঝ বরাবর
             </label>
+            <p className="text-xs leading-relaxed text-muted-foreground">
+              Epson L8050: প্রিন্ট ডায়ালগে <b>Scale ১০০%</b>, <b>Fit to page বন্ধ</b>, <b>Borderless</b> — তাহলে ছবি ঠিক সাইজে আসবে।
+            </p>
             <div className="checker flex min-h-[300px] flex-1 items-center justify-center rounded-lg p-3">
               {sheetUrl && (
                 <img
