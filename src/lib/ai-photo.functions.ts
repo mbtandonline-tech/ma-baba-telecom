@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { closestAspect } from "./ai-aspect";
-import { findGeminiImage, firstInteraction, geminiErrorMessage } from "./gemini-image";
+import { findGeminiImage, firstInteraction, geminiErrorKind, geminiErrorMessage } from "./gemini-image";
 
 const Input = z.object({
   images: z.array(z.string().startsWith("data:image/").max(12_000_000)).min(1).max(2),
@@ -14,7 +14,8 @@ const Input = z.object({
 });
 
 type AiInput = z.infer<typeof Input>;
-type AiResult = { image?: string; error?: string };
+type AiErrorCode = "quota" | "billing" | "key" | "model" | "safety" | "other";
+type AiResult = { image?: string; error?: string; code?: AiErrorCode };
 
 // Free AI photo editing via Cloudflare Workers AI (FLUX.2 [klein]) — direct REST call.
 // CLOUDFLARE_ACCOUNT_ID + CLOUDFLARE_AI_TOKEN are server-only secrets.
@@ -96,12 +97,14 @@ async function freeEdit(data: AiInput): Promise<AiResult> {
     if (!res.ok) {
       if (res.status === 429) {
         return {
+          code: "quota",
           error:
-            "আজকের ফ্রি AI কোটা (১০,০০০ neurons) শেষ। প্রতিদিন ০০:০০ UTC-তে রিসেট হয়। বেশি ছবির জন্য Cloudflare Workers Paid ($5/মাস) নিন — ৯B মডেলে প্রতি ছবি প্রায় $০.০১৭, কার্যত আনলিমিটেড। অথবা Gemini ইঞ্জিন বেছে নিন।",
+            "আজকের ফ্রি AI কোটা (১০,০০০ neurons) শেষ। প্রতিদিন ০০:০০ UTC-তে রিসেট হয়। বেশি ছবির জন্য Cloudflare Workers Paid ($5/মাস) নিন — ৯B মডেলে প্রতি ছবি প্রায় $০.০১৭, কার্যত আনলিমিটেড।",
         };
       }
       if (res.status === 401 || res.status === 403) {
         return {
+          code: "key",
           error:
             "CLOUDFLARE_AI_TOKEN অবৈধ বা মেয়াদোত্তীর্ণ। Cloudflare Dashboard-এ token পরীক্ষা করুন।",
         };
@@ -164,28 +167,35 @@ async function geminiEdit(data: AiInput, apiKey: string): Promise<AiResult> {
     if (!res.ok) {
       const msg = geminiErrorMessage(payload, text.slice(0, 300));
       console.error("Gemini error", res.status, msg);
-      if (
-        res.status === 400 &&
-        /API[_ ]KEY[_ ]INVALID|API key not valid|API key expired/i.test(msg)
-      ) {
+      const kind = geminiErrorKind(res.status, msg);
+      if (kind === "key") {
         return {
+          code: "key",
           error:
             "GEMINI_API_KEY অবৈধ বা মেয়াদোত্তীর্ণ। Google AI Studio (aistudio.google.com/apikey) থেকে নতুন key নিয়ে Cloudflare-এ GEMINI_API_KEY সিক্রেট হিসেবে যোগ করুন।",
         };
       }
-      if (res.status === 403) {
+      if (kind === "billing") {
         return {
+          code: "billing",
           error:
-            "Gemini API অনুমতি দিচ্ছে না (403)। Google Cloud প্রজেক্টে বিলিং চালু আছে এবং key-তে Generative Language API অনুমোদিত কি না দেখুন।",
+            "Google-এ বিলিং চালু নেই। Gemini-র ইমেজ মডেলে ফ্রি টিয়ার নেই, তাই Google Cloud প্রজেক্টে বিলিং চালু না করলে এটি চলবে না। ততক্ষণ ফ্রি ইঞ্জিন ব্যবহার হবে।",
         };
       }
-      if (res.status === 429) {
-        return { error: "Gemini-র কোটা বা রেট লিমিট শেষ (429)। এক মিনিট পর আবার চেষ্টা করুন।" };
+      if (kind === "rate") {
+        return { code: "quota", error: "Gemini-র কোটা বা রেট লিমিট শেষ (429)। এক মিনিট পর আবার চেষ্টা করুন।" };
       }
-      if (res.status === 404) {
-        return { error: "Gemini ইমেজ মডেল পাওয়া যায়নি (404)। API সংস্করণ বদলেছে কি না দেখুন।" };
+      if (kind === "model") {
+        return { code: "model", error: "Gemini ইমেজ মডেল পাওয়া যায়নি (404)। API সংস্করণ বদলেছে কি না দেখুন।" };
       }
-      return { error: `Gemini ত্রুটি (${res.status})। আবার চেষ্টা করুন।` };
+      if (kind === "safety") {
+        return {
+          code: "safety",
+          error:
+            "Gemini এই প্রম্পট/ছবি সেফটি ফিল্টারে আটকে দিয়েছে। প্রম্পট বা ছবি বদলে আবার চেষ্টা করুন।",
+        };
+      }
+      return { code: "other", error: `Gemini ত্রুটি (${res.status})। আবার চেষ্টা করুন।` };
     }
     const b64 = findGeminiImage(payload);
     if (!b64) {

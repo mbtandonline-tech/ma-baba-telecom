@@ -103,12 +103,12 @@ function Studio() {
   const [promptId, setPromptId] = useState("blue");
   const [promptText, setPromptText] = useState(AI_PROMPTS[0]!.prompt);
   const [aiModel, setAiModel] = useState<"auto" | "fast" | "hq">("auto");
-  const [aiProvider, setAiProvider] = useState<"free" | "gemini">("free");
+  const [aiProvider, setAiProvider] = useState<"auto" | "free" | "gemini">("auto");
   // Daily free-quota estimate for this browser (see lib/ai-quota.ts).
   const [usage, setUsage] = useState<AiUsage>(() => emptyUsage());
   useEffect(() => { setUsage(readUsage()); }, []);
   const quotaLeft = remainingImages(usage);
-  const shownModel = aiProvider === "gemini" && aiModel === "auto" ? "hq" : aiModel;
+  const shownModel = aiProvider === "gemini" ? (aiModel === "hq" ? "hq" : "fast") : aiModel;
   const [busy, setBusy] = useState(false);
   const ai = useServerFn(aiEditPhoto);
 
@@ -183,10 +183,6 @@ function Studio() {
     setBusy(true);
     try {
       const src = origImg ?? img;
-      // Workers AI needs input images < 512x512; Gemini keeps more detail at 1024.
-      const maxInput = aiProvider === "gemini" ? 1024 : 500;
-      const images = [toUploadDataUrl(src, maxInput)];
-      if (needsTwo && second) images.push(toUploadDataUrl(await loadImage(second), maxInput));
       // Match the output aspect to the final print size so the model composes the
       // head-and-shoulders framing correctly and the later crop does not cut the face.
       // Couple photos keep the source aspect so both people stay in frame.
@@ -201,20 +197,47 @@ function Studio() {
         width = ar >= 1 ? 1024 : Math.max(256, Math.round(1024 * ar));
         height = ar >= 1 ? Math.max(256, Math.round(1024 / ar)) : 1024;
       }
-      // Free engine: "auto" spends the daily quota on the 9B model first, then 4B.
-      // Gemini always needs an explicit 1K/2K choice (auto falls back to 1K).
-      const usedModel: "fast" | "hq" =
-        aiProvider === "gemini" ? (aiModel === "hq" ? "hq" : "fast") : aiModel === "auto" ? resolveAutoModel(readUsage()) : aiModel;
-      const r = await ai({ data: { images, prompt, width, height, model: usedModel, provider: aiProvider } });
-      if (r.error || !r.image) throw new Error(r.error);
-      apply({ src: r.image, frame: DEFAULT_FRAME });
-      if (aiProvider === "free") {
-        // Count only successful free edits; Gemini is billed, not quota-limited.
-        const next = addUsage(readUsage(), usedModel);
-        writeUsage(next);
-        setUsage(next);
+      // One click, best available engine: Gemini → FLUX 9B → FLUX 4B.
+      // Each step falls through silently when that engine is unavailable (no billing,
+      // quota spent, rate limit), so nobody has to pick an engine or retry by hand.
+      const attempts: Array<{ provider: "free" | "gemini"; model: "fast" | "hq" }> = [];
+      if (aiProvider !== "free") attempts.push({ provider: "gemini", model: aiModel === "hq" ? "hq" : "fast" });
+      if (aiProvider !== "gemini") {
+        const firstFree = aiModel === "auto" ? resolveAutoModel(readUsage()) : aiModel;
+        attempts.push({ provider: "free", model: firstFree });
+        if (firstFree === "hq") attempts.push({ provider: "free", model: "fast" });
       }
-      toast.success("AI ছবি তৈরি হয়েছে!");
+
+      let lastError = "";
+      for (const [i, attempt] of attempts.entries()) {
+        // Workers AI needs input images < 512x512; Gemini keeps more detail at 1024.
+        const maxInput = attempt.provider === "gemini" ? 1024 : 500;
+        const images = [toUploadDataUrl(src, maxInput)];
+        if (needsTwo && second) images.push(toUploadDataUrl(await loadImage(second), maxInput));
+        const r = await ai({ data: { images, prompt, width, height, model: attempt.model, provider: attempt.provider } });
+        if (r.error || !r.image) {
+          lastError = r.error || "AI ব্যর্থ হয়েছে";
+          // A safety refusal is final; another model would refuse the same content.
+          if (r.code === "safety") break;
+          continue;
+        }
+        apply({ src: r.image, frame: DEFAULT_FRAME });
+        if (attempt.provider === "free") {
+          // Count only successful free edits; Gemini is billed, not quota-limited.
+          const next = addUsage(readUsage(), attempt.model);
+          writeUsage(next);
+          setUsage(next);
+        }
+        if (i > 0) {
+          const label = attempt.provider === "gemini" ? "Gemini" : attempt.model === "hq" ? "FLUX 9B" : "FLUX 4B";
+          const why = attempts[0]!.provider === "gemini" ? "Gemini এখন পাওয়া যাচ্ছে না" : "৯B কোটা শেষ";
+          toast.info(`${why} — ${label} দিয়ে তৈরি হয়েছে`);
+        } else {
+          toast.success("AI ছবি তৈরি হয়েছে!");
+        }
+        return;
+      }
+      toast.error(lastError || "AI ব্যর্থ হয়েছে");
     } catch (e) {
       toast.error((e as Error).message || "AI ব্যর্থ হয়েছে");
     } finally {
@@ -393,19 +416,20 @@ function Studio() {
               ))}
             </div>
             <Textarea value={promptText} onChange={(e) => setPromptText(e.target.value)} rows={4} className="text-xs" />
-            <div className="grid grid-cols-2 gap-1 rounded-lg border p-1">
-              {([["free", "ফ্রি ইঞ্জিন", "Cloudflare · দৈনিক ফ্রি কোটা"], ["gemini", "Gemini", "সেরা মান · ~৳৪-৬/ছবি"]] as const).map(([k, t, h]) => (
+            <div className="grid grid-cols-3 gap-1 rounded-lg border p-1">
+              {([["auto", "সেরা (অটো)", "Gemini → ৯B → ৪B"], ["free", "শুধু ফ্রি", "Cloudflare কোটা"], ["gemini", "শুধু Gemini", "পেইড · ~৳৪/ছবি"]] as const).map(([k, t, h]) => (
                 <button key={k} onClick={() => setAiProvider(k)} className={`rounded-md px-2 py-1.5 text-left transition-colors ${aiProvider === k ? "bg-primary/15 ring-1 ring-primary" : "hover:bg-accent"}`}>
                   <div className="text-xs font-semibold">{t}</div>
                   <div className="text-[10px] text-muted-foreground">{h}</div>
                 </button>
               ))}
             </div>
-            {aiProvider === "gemini" && <p className="text-[11px] text-muted-foreground">Gemini-র ইমেজ মডেলে ফ্রি টিয়ার নেই — Google-এ বিলিং চালু থাকলে চলবে (~$০.০৩৪/১K, $০.০৫/২K)। বিলিং ছাড়া Google কোটা এরর দেয়; তখন ফ্রি ইঞ্জিন বা নিচের কপি-পেস্ট পথ ব্যবহার করুন।</p>}
-            <div className="grid grid-cols-3 gap-1 rounded-lg border p-1">
+            {aiProvider === "auto" && <p className="text-[11px] text-muted-foreground">এক ক্লিকে যা পাওয়া যায় তার সেরাটা: Gemini → FLUX ৯B → FLUX ৪B। কোনো ইঞ্জিন বন্ধ/কোটা শেষ হলে নিজে থেকেই পরেরটায় যায় — আপনাকে কিছু বাছতে হবে না।</p>}
+            {aiProvider === "gemini" && <p className="text-[11px] text-muted-foreground">Gemini-র ইমেজ মডেলে ফ্রি টিয়ার নেই — Google-এ বিলিং চালু না থাকলে কোটা এরর আসবে। প্রতি ছবি ≈ $০.০৩৪ (১K) / $০.০৫ (২K)।</p>}
+            <div className={`grid gap-1 rounded-lg border p-1 ${aiProvider === "gemini" ? "grid-cols-2" : "grid-cols-3"}`}>
               {(aiProvider === "gemini"
                 ? ([["fast", "দ্রুত", "Gemini 1K · ~$০.০৩৪"], ["hq", "উন্নত", "Gemini 2K · ~$০.০৫"]] as const)
-                : ([["auto", "সেরা (অটো)", "৯B আগে, শেষে ৪B"], ["hq", "৯B", "সেরা মান · ~৭টি/দিন"], ["fast", "৪B", "দ্রুত · ~৮০টি/দিন"]] as const)
+                : ([["auto", "অটো", "৯B আগে, শেষে ৪B"], ["hq", "৯B", "সেরা মান · ~৭টি/দিন"], ["fast", "৪B", "দ্রুত · ~৮০টি/দিন"]] as const)
               ).map(([k, t, h]) => (
                 <button
                   key={k}
@@ -417,7 +441,7 @@ function Studio() {
                 </button>
               ))}
             </div>
-            {aiProvider === "free" && (
+            {aiProvider !== "gemini" && (
               <div className="rounded-lg border border-dashed px-2 py-1.5 text-[11px] text-muted-foreground">
                 আজ ফ্রি বাকি ≈ <b className="text-foreground">{quotaLeft.hq}</b> টি ৯B বা ≈ <b className="text-foreground">{quotaLeft.fast}</b> টি ৪B
                 <div className="text-[10px]">এই ব্রাউজারের হিসাব · মোট কোটা সবার সাথে ভাগ করা · রাত ১২টা UTC-তে রিসেট</div>
@@ -439,13 +463,16 @@ function Studio() {
             <Button className="w-full" disabled={busy || !img} onClick={() => runAi(promptText, AI_PROMPTS.find((p) => p.id === promptId)?.needsTwo)}>
               {busy ? <><Loader2 className="animate-spin" /> তৈরি হচ্ছে…</> : <><Sparkles /> AI দিয়ে ছবি তৈরি করুন</>}
             </Button>
-            <div className="grid grid-cols-2 gap-1.5">
-              <Button size="sm" variant="secondary" onClick={copyImage} disabled={!img}><Copy /> ছবি কপি</Button>
-              <Button size="sm" variant="secondary" onClick={() => { navigator.clipboard.writeText(promptText); toast.success("প্রম্পট কপি হয়েছে"); }}><Copy /> প্রম্পট কপি</Button>
-              <Button size="sm" variant="secondary" asChild><a href="https://gemini.google.com/app" target="_blank" rel="noreferrer"><ExternalLink /> Gemini</a></Button>
-              <Button size="sm" variant="secondary" asChild><a href="https://chatgpt.com/" target="_blank" rel="noreferrer"><ExternalLink /> ChatGPT</a></Button>
-            </div>
-            <p className="text-[11px] text-muted-foreground">সবচেয়ে ভালো মান ফ্রিতে: <b>ছবি কপি</b> → Gemini/ChatGPT খুলে <b>Ctrl+V</b> → <b>প্রম্পট কপি</b> করে পেস্ট করুন → তৈরি ছবি ডাউনলোড করে “Open Photo” দিয়ে খুলুন।</p>
+            <details className="rounded-lg border p-2">
+              <summary className="cursor-pointer text-xs font-medium text-muted-foreground">অন্য উপায়: Gemini/ChatGPT ওয়েব অ্যাপে হাতে করুন (ঐচ্ছিক)</summary>
+              <div className="mt-2 grid grid-cols-2 gap-1.5">
+                <Button size="sm" variant="secondary" onClick={copyImage} disabled={!img}><Copy /> ছবি কপি</Button>
+                <Button size="sm" variant="secondary" onClick={() => { navigator.clipboard.writeText(promptText); toast.success("প্রম্পট কপি হয়েছে"); }}><Copy /> প্রম্পট কপি</Button>
+                <Button size="sm" variant="secondary" asChild><a href="https://gemini.google.com/app" target="_blank" rel="noreferrer"><ExternalLink /> Gemini</a></Button>
+                <Button size="sm" variant="secondary" asChild><a href="https://chatgpt.com/" target="_blank" rel="noreferrer"><ExternalLink /> ChatGPT</a></Button>
+              </div>
+              <p className="mt-2 text-[11px] text-muted-foreground">উপরের “AI দিয়ে ছবি তৈরি করুন” নিজেই সেরা ইঞ্জিন বেছে নেয়। এই অংশটি শুধু তখনই দরকার যদি সব ফ্রি কোটা শেষ হয়ে যায় এবং Google-এ বিলিং চালু না থাকে।</p>
+            </details>
           </Panel>
 
           <Panel title="Enhance" color="var(--panel-enhance)">

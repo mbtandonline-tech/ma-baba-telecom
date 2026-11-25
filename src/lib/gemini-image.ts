@@ -29,6 +29,25 @@ export function geminiErrorMessage(payload: unknown, fallback = ""): string {
   return fallback;
 }
 
+export type GeminiErrorKind = "key" | "billing" | "rate" | "model" | "safety" | "other";
+
+/**
+ * Classify a failed Gemini call so the UI can explain it and decide whether
+ * falling back to the free engine makes sense. Google reports a project with no
+ * billing as 429 RESOURCE_EXHAUSTED, whose message mentions billing/plan, so the
+ * message has to be checked before assuming a simple rate limit.
+ */
+export function geminiErrorKind(status: number, message: string): GeminiErrorKind {
+  const m = message.toLowerCase();
+  if (/api[_ ]?key[_ ]?(invalid|expired)|api key not valid|unauthenticated/.test(m)) return "key";
+  if (/billing|free[_ ]tier|quota_limit_value.*0|enable billing|plan and billing/.test(m)) return "billing";
+  if (status === 429) return "rate";
+  if (status === 404) return "model";
+  if (/safety|blocked|recitation|policy|prohibited/.test(m)) return "safety";
+  if (status === 401 || status === 403) return "key";
+  return "other";
+}
+
 /** Last generated image block of an interaction (thought images are skipped). */
 export function findGeminiImage(payload: unknown): string | undefined {
   const steps = firstInteraction(payload).steps ?? [];
