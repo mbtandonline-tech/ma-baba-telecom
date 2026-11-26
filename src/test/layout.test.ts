@@ -41,4 +41,11 @@ describe("centered sheet placements (Epson L8050)", () => {
     expect(spots).toHaveLength(8);
     expect(spots[0]).toMatchObject({ x: margin, y: margin, w, h });
   });
+
+  it("reports how many copies fit in one vertical column on the tall side", () => {
+    // Stamp 20x25: ten stack under each other on portrait A4.
+    expect(layoutSheet(210, 297, 20, 25, "portrait").rows).toBe(10);
+    // Passport 40x50: only five fit, so 8 copies need a second column.
+    expect(layoutSheet(210, 297, 40, 50, "portrait").rows).toBe(5);
+  });
 });

@@ -8,6 +8,7 @@ const documentHtml = toolHtml.replace("</script></body>", `</script><script>${br
 
 export type PrintLayoutPreset = {
   paper: string;
+  orient: "p" | "l";
   w: number;
   h: number;
   copies: number;

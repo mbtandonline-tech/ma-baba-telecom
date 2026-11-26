@@ -168,7 +168,12 @@ function Studio() {
 
   const size = sizeId === "custom" ? custom : PHOTO_SIZES.find((p) => p.id === sizeId)!;
   const paper = PAPERS.find((p) => p.id === paperId)!;
-  const layout = useMemo(() => layoutSheet(paper.w, paper.h, size.w, size.h, orient), [paper, size.w, size.h, orient]);
+  // One vertical column always stands on the taller side of the paper, so the
+  // most copies stack under each other; grids keep the auto (max per sheet) rule.
+  const tall = paper.h >= paper.w ? "portrait" : "landscape";
+  const orientUsed = orient !== "auto" ? orient : !fill && cols === 1 ? tall : "auto";
+  const layout = useMemo(() => layoutSheet(paper.w, paper.h, size.w, size.h, orientUsed), [paper, size.w, size.h, orientUsed]);
+  const singleCol = useMemo(() => layoutSheet(paper.w, paper.h, size.w, size.h, tall), [paper, size.w, size.h, tall]);
   const useCols = fill ? layout.cols : Math.min(cols, layout.cols);
   const count = fill ? layout.perSheet : Math.min(copies, useCols * layout.rows);
 
@@ -270,8 +275,17 @@ function Studio() {
   };
 
   const printLayout = useMemo(
-    () => ({ paper: printLayoutFor(paperId), w: size.w, h: size.h, copies: Math.max(1, count), cols: useCols, gap: 2, center }),
-    [paperId, size.w, size.h, count, useCols, center],
+    () => ({
+      paper: printLayoutFor(paperId),
+      orient: layout.paperW > layout.paperH ? "l" : "p",
+      w: size.w,
+      h: size.h,
+      copies: Math.max(1, count),
+      cols: useCols,
+      gap: 2,
+      center,
+    }),
+    [paperId, layout.paperW, layout.paperH, size.w, size.h, count, useCols, center],
   );
 
   const photoCanvas = useCallback(
@@ -569,18 +583,31 @@ function Studio() {
               <Stepper label="COPIES" value={count} onChange={(v) => { setFill(false); setCopies(Math.max(1, v)); }} />
               <Stepper label="COLUMNS" value={useCols} onChange={(v) => { setFill(false); setCols(Math.max(1, Math.min(layout.cols, v))); }} />
             </div>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-3 gap-2">
               <Button
                 size="sm"
+                className="px-1 text-xs"
                 variant={!fill && copies === 4 && useCols === 1 ? "default" : "secondary"}
                 onClick={() => { setFill(false); setCopies(4); setCols(1); setCenter(true); }}
-              >৪ কপি · এক কলাম</Button>
+              >৪ কপি · ১ কলাম</Button>
               <Button
                 size="sm"
+                className="px-1 text-xs"
+                disabled={singleCol.rows < 8}
+                title={singleCol.rows < 8 ? `এই সাইজে এক কলামে ${singleCol.rows}টির বেশি লম্বালম্বি ধরে না` : "৮টি একটার নিচে একটা, কাগজের মাঝে"}
+                variant={!fill && copies === 8 && useCols === 1 ? "default" : "secondary"}
+                onClick={() => { setFill(false); setCopies(8); setCols(1); setCenter(true); }}
+              >৮ কপি · ১ কলাম</Button>
+              <Button
+                size="sm"
+                className="px-1 text-xs"
                 variant={!fill && copies === 8 && useCols === 2 ? "default" : "secondary"}
                 onClick={() => { setFill(false); setCopies(8); setCols(2); setCenter(true); }}
               >৮ কপি · ২ কলাম</Button>
             </div>
+            <p className="text-xs leading-relaxed text-muted-foreground">
+              {+size.w.toFixed(1)}×{+size.h.toFixed(1)} মিমি · এক কলামে সর্বোচ্চ <b>{singleCol.rows}</b>টি · এক শিটে সর্বোচ্চ <b>{layout.perSheet}</b>টি
+            </p>
             <label className="flex items-center gap-2 text-sm font-medium">
               <Checkbox checked={center} onCheckedChange={(v) => setCenter(!!v)} /> কাগজের মাঝ বরাবর
             </label>

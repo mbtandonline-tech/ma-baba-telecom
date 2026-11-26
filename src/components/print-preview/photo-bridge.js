@@ -32,7 +32,7 @@
     model.pre = presetOf(model);
     if (L.paper && PAGES[L.paper]) {
       S.pw = L.paper;
-      S.o = 'p';
+      S.o = L.orient === 'l' ? 'l' : 'p';
     }
     // Center the whole block on the sheet (Epson L8050: 4/8 copies in the middle).
     S.ha = L.center ? 'c' : 'l';
