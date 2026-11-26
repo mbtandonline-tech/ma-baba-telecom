@@ -34,7 +34,9 @@
       S.pw = L.paper;
       S.o = L.orient === 'l' ? 'l' : 'p';
     }
-    // Center the whole block on the sheet (Epson L8050: 4/8 copies in the middle).
+    // Center only when the studio asks for it; otherwise start at the margins.
+    const margin = num(L.margin, 0, 25);
+    if (margin !== null) S.mt = S.mr = S.mb = S.ml = margin / 25.4;
     S.ha = L.center ? 'c' : 'l';
     S.va = L.center ? 'c' : 't';
     S.gb = 0;

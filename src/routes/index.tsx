@@ -101,8 +101,9 @@ function Studio() {
   const [orient, setOrient] = useState<"auto" | "portrait" | "landscape">("auto");
   const [border, setBorder] = useState(0);
   const [cutLines, setCutLines] = useState(true);
-  // Center the whole photo block on the sheet (Epson L8050: 4/8 copies in the middle).
-  const [center, setCenter] = useState(true);
+  // Optional: put the whole photo block in the middle of the sheet. Off by
+  // default — copies start at the top margin like a normal print sheet.
+  const [center, setCenter] = useState(false);
   const [label, setLabel] = useState({ name: "", date: "" });
 
   const [promptId, setPromptId] = useState("blue");
@@ -283,6 +284,7 @@ function Studio() {
       copies: Math.max(1, count),
       cols: useCols,
       gap: 2,
+      margin: 5,
       center,
     }),
     [paperId, layout.paperW, layout.paperH, size.w, size.h, count, useCols, center],
@@ -588,28 +590,28 @@ function Studio() {
                 size="sm"
                 className="px-1 text-xs"
                 variant={!fill && copies === 4 && useCols === 1 ? "default" : "secondary"}
-                onClick={() => { setFill(false); setCopies(4); setCols(1); setCenter(true); }}
+                onClick={() => { setFill(false); setCopies(4); setCols(1); }}
               >৪ কপি · ১ কলাম</Button>
               <Button
                 size="sm"
                 className="px-1 text-xs"
                 disabled={singleCol.rows < 8}
-                title={singleCol.rows < 8 ? `এই সাইজে এক কলামে ${singleCol.rows}টির বেশি লম্বালম্বি ধরে না` : "৮টি একটার নিচে একটা, কাগজের মাঝে"}
+                title={singleCol.rows < 8 ? `এই সাইজে এক কলামে ${singleCol.rows}টির বেশি লম্বালম্বি ধরে না` : "৮টি একটার নিচে একটা, উপর থেকে সাজানো"}
                 variant={!fill && copies === 8 && useCols === 1 ? "default" : "secondary"}
-                onClick={() => { setFill(false); setCopies(8); setCols(1); setCenter(true); }}
+                onClick={() => { setFill(false); setCopies(8); setCols(1); }}
               >৮ কপি · ১ কলাম</Button>
               <Button
                 size="sm"
                 className="px-1 text-xs"
                 variant={!fill && copies === 8 && useCols === 2 ? "default" : "secondary"}
-                onClick={() => { setFill(false); setCopies(8); setCols(2); setCenter(true); }}
+                onClick={() => { setFill(false); setCopies(8); setCols(2); }}
               >৮ কপি · ২ কলাম</Button>
             </div>
             <p className="text-xs leading-relaxed text-muted-foreground">
               {+size.w.toFixed(1)}×{+size.h.toFixed(1)} মিমি · এক কলামে সর্বোচ্চ <b>{singleCol.rows}</b>টি · এক শিটে সর্বোচ্চ <b>{layout.perSheet}</b>টি
             </p>
             <label className="flex items-center gap-2 text-sm font-medium">
-              <Checkbox checked={center} onCheckedChange={(v) => setCenter(!!v)} /> কাগজের মাঝ বরাবর
+              <Checkbox checked={center} onCheckedChange={(v) => setCenter(!!v)} /> কাগজের মাঝ বরাবর <span className="text-xs font-normal text-muted-foreground">(ঐচ্ছিক)</span>
             </label>
             <p className="text-xs leading-relaxed text-muted-foreground">
               Epson L8050: প্রিন্ট ডায়ালগে <b>Scale ১০০%</b>, <b>Fit to page বন্ধ</b>, <b>Borderless</b> — তাহলে ছবি ঠিক সাইজে আসবে।

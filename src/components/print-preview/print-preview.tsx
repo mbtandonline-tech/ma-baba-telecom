@@ -14,6 +14,7 @@ export type PrintLayoutPreset = {
   copies: number;
   cols: number;
   gap: number;
+  margin: number;
   center: boolean;
 };
 
